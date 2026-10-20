@@ -1,0 +1,37 @@
+name: Publish plugin release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate version and PHP
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          grep -Fq " * Version: $VERSION" source/woo-shipping-label-wiliweb/woo-shipping-label-wiliweb.php
+          grep -Fq "define('WSL_VERSION', '$VERSION');" source/woo-shipping-label-wiliweb/woo-shipping-label-wiliweb.php
+          grep -Fxq "Stable tag: $VERSION" source/woo-shipping-label-wiliweb/readme.txt
+          find source/woo-shipping-label-wiliweb -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Build installable package
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir dist
+          cd source
+          zip -qr "../dist/woo-shipping-label-wiliweb-$VERSION.zip" woo-shipping-label-wiliweb
+          cd ../dist
+          sha256sum "woo-shipping-label-wiliweb-$VERSION.zip" > SHA256SUMS.txt
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip dist/SHA256SUMS.txt --title "WiliWeb Shipping Label $GITHUB_REF_NAME" --generate-notes
