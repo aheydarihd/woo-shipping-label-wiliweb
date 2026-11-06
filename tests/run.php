@@ -14,7 +14,7 @@ $groups = [
     'controller' => ['test-print-controller.php'],
     'renderer' => ['test-renderer.php'],
     'invoice-renderer' => ['test-invoice-renderer.php'],
-    'admin' => ['test-admin-hooks.php', 'test-github-updater.php'],
+    'admin' => ['test-admin-hooks.php', 'test-settings-page.php', 'test-github-updater.php'],
 ];
 $files = $group === 'all' ? array_values(array_unique(array_merge(...array_values($groups)))) : ($groups[$group] ?? []);
 $passed = 0;

@@ -33,7 +33,7 @@
         setSize('label_height', (294 - margin * 2 - (preset.rows - 1) * gap) / preset.rows);
     }
 
-    function draw() {
+    function drawLabels() {
         var select = document.querySelector('[data-wsl-layout]');
         var preview = document.querySelector('[data-wsl-preview]');
         if (!select || !preview) return;
@@ -45,46 +45,58 @@
         for (var i = 0; i < count; i++) preview.appendChild(document.createElement('i'));
     }
 
+    function drawInvoice() {
+        var preview = document.querySelector('[data-wsl-invoice-preview]');
+        var template = document.querySelector('[data-wsl-invoice-template]:checked');
+        if (!preview) return;
+        preview.classList.toggle('is-classic', !!template && template.value === 'classic');
+    }
+
+    function setupMediaPicker(root) {
+        var select = root.querySelector('[data-wsl-logo-select]');
+        var remove = root.querySelector('[data-wsl-logo-remove]');
+        var logoId = root.querySelector('[data-wsl-logo-id]');
+        var preview = root.querySelector('[data-wsl-logo-preview]');
+        var mediaFrame;
+        if (!select || !logoId || !preview) return;
+
+        function showLogo(id, url) {
+            var image = preview.querySelector('img');
+            var empty = preview.querySelector('span');
+            logoId.value = id || '';
+            image.src = url || '';
+            image.hidden = !url;
+            empty.hidden = !!url;
+            preview.classList.toggle('has-image', !!url);
+            if (remove) remove.hidden = !url;
+            select.textContent = url ? 'تغییر لوگو' : 'انتخاب لوگو';
+        }
+
+        select.addEventListener('click', function () {
+            if (!window.wp || !window.wp.media) return;
+            if (!mediaFrame) {
+                mediaFrame = window.wp.media({ title: 'انتخاب لوگو', button: { text: 'استفاده از این تصویر' }, library: { type: 'image' }, multiple: false });
+                mediaFrame.on('select', function () {
+                    var attachment = mediaFrame.state().get('selection').first().toJSON();
+                    var url = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
+                    showLogo(attachment.id, url);
+                });
+            }
+            mediaFrame.open();
+        });
+        if (remove) remove.addEventListener('click', function () { showLogo('', ''); });
+    }
+
     document.addEventListener('change', function (event) {
         if (event.target.matches('[data-wsl-layout], [data-wsl-orientation]')) {
             var layout = document.querySelector('[data-wsl-layout]');
             applyPreset(layout ? (parseInt(layout.value, 10) || 4) : 4);
-            draw();
+            drawLabels();
         }
+        if (event.target.matches('[data-wsl-invoice-template]')) drawInvoice();
     });
 
-    var selectLogo = document.querySelector('[data-wsl-logo-select]');
-    var removeLogo = document.querySelector('[data-wsl-logo-remove]');
-    var logoId = document.querySelector('[data-wsl-logo-id]');
-    var logoPreview = document.querySelector('[data-wsl-logo-preview]');
-    var mediaFrame;
-
-    function showLogo(id, url) {
-        if (!logoId || !logoPreview) return;
-        var image = logoPreview.querySelector('img');
-        var empty = logoPreview.querySelector('span');
-        logoId.value = id || '';
-        image.src = url || '';
-        image.hidden = !url;
-        empty.hidden = !!url;
-        logoPreview.classList.toggle('has-image', !!url);
-        if (removeLogo) removeLogo.hidden = !url;
-        if (selectLogo) selectLogo.textContent = url ? 'تغییر لوگو' : 'انتخاب لوگو';
-    }
-
-    if (selectLogo) selectLogo.addEventListener('click', function () {
-        if (!window.wp || !wp.media) return;
-        if (!mediaFrame) {
-            mediaFrame = wp.media({ title: 'انتخاب لوگوی لیبل', button: { text: 'استفاده از این تصویر' }, library: { type: 'image' }, multiple: false });
-            mediaFrame.on('select', function () {
-                var attachment = mediaFrame.state().get('selection').first().toJSON();
-                var url = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
-                showLogo(attachment.id, url);
-            });
-        }
-        mediaFrame.open();
-    });
-
-    if (removeLogo) removeLogo.addEventListener('click', function () { showLogo('', ''); });
-    draw();
+    document.querySelectorAll('[data-wsl-media-picker]').forEach(setupMediaPicker);
+    drawLabels();
+    drawInvoice();
 })();
