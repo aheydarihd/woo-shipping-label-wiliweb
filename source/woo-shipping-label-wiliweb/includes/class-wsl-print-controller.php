@@ -21,12 +21,12 @@ final class WSL_Print_Controller {
         return array_values(array_unique($ids));
     }
 
-    public static function create_url(array $ids): string {
+    public static function create_url(array $ids, string $document = 'label'): string {
         $ids = self::parse_ids($ids);
-        if (!$ids) {
+        if (!$ids || !in_array($document, ['label', 'invoice'], true)) {
             return '';
         }
-        $request = self::create_request($ids);
+        $request = self::create_request($ids, null, $document);
         return add_query_arg(
             [
                 'action'     => 'wsl_render_print',
@@ -38,11 +38,12 @@ final class WSL_Print_Controller {
         );
     }
 
-    public static function create_request(array $ids, ?int $expires = null): array {
+    public static function create_request(array $ids, ?int $expires = null, string $document = 'label'): array {
         $data = [
             'ids' => self::parse_ids($ids),
             'uid' => get_current_user_id(),
             'exp' => $expires ?? (time() + self::REQUEST_TTL),
+            'document' => $document,
         ];
         $payload = rtrim(strtr(base64_encode((string) json_encode($data)), '+/', '-_'), '=');
         return [
@@ -51,7 +52,7 @@ final class WSL_Print_Controller {
         ];
     }
 
-    public static function verify_request($payload, $signature): array {
+    public static function verify_document_request($payload, $signature): array {
         $payload = is_scalar($payload) ? (string) $payload : '';
         $signature = is_scalar($signature) ? strtolower((string) $signature) : '';
         if ($payload === '' || !preg_match('/^[A-Za-z0-9_-]+$/', $payload) || !preg_match('/^[a-f0-9]{64}$/', $signature)) {
@@ -71,7 +72,17 @@ final class WSL_Print_Controller {
         if (!is_array($data) || (int) ($data['uid'] ?? 0) !== get_current_user_id() || (int) ($data['exp'] ?? 0) < time()) {
             return [];
         }
-        return self::parse_ids($data['ids'] ?? []);
+        $ids = self::parse_ids($data['ids'] ?? []);
+        $document = isset($data['document']) ? (string) $data['document'] : 'label';
+        if (!$ids || !in_array($document, ['label', 'invoice'], true)) {
+            return [];
+        }
+        return ['ids' => $ids, 'document' => $document];
+    }
+
+    public static function verify_request($payload, $signature): array {
+        $request = self::verify_document_request($payload, $signature);
+        return $request['ids'] ?? [];
     }
 
     public static function sanitize_token($raw): string {
@@ -96,17 +107,27 @@ final class WSL_Print_Controller {
         $signature = strtolower(preg_replace('/[^a-fA-F0-9]/', '', (string) wp_unslash($_GET['signature'] ?? '')) ?: '');
         if ($payload !== '' || $signature !== '') {
             check_admin_referer('wsl_render_' . $signature, '_wsl_nonce');
-            $ids = self::verify_request($payload, $signature);
+            $request = self::verify_document_request($payload, $signature);
+            $ids = $request['ids'] ?? [];
+            $document = $request['document'] ?? '';
         } else {
             $token = self::sanitize_token(wp_unslash($_GET['token'] ?? ''));
             check_admin_referer('wsl_render_' . $token, '_wsl_nonce');
             $key = self::TOKEN_PREFIX . get_current_user_id() . '_' . $token;
             $ids = get_transient($key);
+            $document = 'label';
         }
         if (!is_array($ids) || !$ids) {
             wp_die(esc_html__('درخواست چاپ منقضی یا نامعتبر است.', 'woo-shipping-label-wiliweb'), '', ['response' => 400]);
         }
         $settings = WSL_Settings::get();
+        $module = $document === 'invoice' ? 'invoice' : 'labels';
+        if (!WSL_Settings::module_enabled($settings, $module)) {
+            wp_die(esc_html__('این بخش چاپ در تنظیمات افزونه غیرفعال است.', 'woo-shipping-label-wiliweb'), '', ['response' => 403]);
+        }
+        if ($document === 'invoice' && !class_exists('WSL_Invoice_Renderer')) {
+            wp_die(esc_html__('موتور چاپ فاکتور در دسترس نیست.', 'woo-shipping-label-wiliweb'), '', ['response' => 503]);
+        }
         $labels = [];
         $skipped = 0;
         foreach (self::parse_ids($ids) as $id) {
