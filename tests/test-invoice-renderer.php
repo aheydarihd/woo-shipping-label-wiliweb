@@ -97,6 +97,26 @@ $classic = WSL_Invoice_Renderer::invoice($invoice, $classic_settings);
 wsl_assert(str_contains($classic, 'wsl-invoice--classic'), 'classic template class');
 wsl_assert(str_contains($classic, 'wsl-invoice__signature'), 'classic signature space');
 
+$classic_hidden = $classic_settings;
+foreach (['seller_contact', 'seller_address', 'buyer_phone', 'buyer_email', 'buyer_address', 'buyer_postcode'] as $field) {
+    $classic_hidden['invoice']['fields'][$field] = false;
+}
+$classic_hidden_html = WSL_Invoice_Renderer::invoice($invoice, $classic_hidden);
+wsl_assert(!str_contains($classic_hidden_html, '02112345678'), 'classic disabled seller contact hidden');
+wsl_assert(!str_contains($classic_hidden_html, 'تهران، بازار بزرگ'), 'classic disabled seller address hidden');
+wsl_assert(!str_contains($classic_hidden_html, '09121234567'), 'classic disabled buyer phone hidden');
+wsl_assert(!str_contains($classic_hidden_html, 'ali@example.test'), 'classic disabled buyer email hidden');
+wsl_assert(!str_contains($classic_hidden_html, 'خیابان آزادی'), 'classic disabled buyer address hidden');
+wsl_assert(!str_contains($classic_hidden_html, '1234567890'), 'classic disabled buyer postcode hidden');
+
+$invoice_with_note = $invoice;
+$invoice_with_note['notes']['customer'] = 'لطفاً عصر ارسال شود';
+$classic_details = WSL_Invoice_Renderer::invoice($invoice_with_note, $classic_settings);
+wsl_assert(str_contains($classic_details, 'در حال انجام'), 'classic order status printed');
+wsl_assert(str_contains($classic_details, 'ali@example.test'), 'classic buyer email printed');
+wsl_assert(str_contains($classic_details, '1234567890'), 'classic buyer postcode printed');
+wsl_assert(str_contains($classic_details, 'لطفاً عصر ارسال شود'), 'classic customer note printed');
+
 $unsafe_template = $settings;
 $unsafe_template['invoice']['template'] = '../../evil';
 wsl_assert(str_contains(WSL_Invoice_Renderer::invoice($invoice, $unsafe_template), 'wsl-invoice--modern'), 'unsafe template falls back to modern');
