@@ -17,10 +17,18 @@ if (!is_plugin_active($plugin)) {
 }
 
 $settings = WSL_Settings::sanitize([
+    'modules' => ['labels_enabled' => '1', 'invoice_enabled' => '1'],
     'template' => 'table',
     'layout' => ['per_page' => 4],
     'sender' => ['name' => 'فروشگاه آزمایشی', 'phone' => '02100000000', 'province' => 'تهران', 'city' => 'تهران', 'address' => 'نشانی تست', 'postcode' => '1111111111'],
     'fields' => array_fill_keys(WSL_Settings::field_keys(), '1'),
+    'invoice' => [
+        'template' => 'modern',
+        'title' => 'فاکتور فروش',
+        'footer_note' => 'سپاس',
+        'accent' => '#155eef',
+        'fields' => array_fill_keys(WSL_Settings::invoice_field_keys(), '1'),
+    ],
 ]);
 update_option(WSL_Settings::OPTION, $settings);
 if (WSL_Settings::get()['layout']['per_page'] !== 4) {
@@ -58,13 +66,20 @@ if (($print_query['action'] ?? '') !== 'wsl_render_print' || empty($print_query[
     fwrite(STDERR, "Print URL query or nonce failed\n");
     exit(1);
 }
+$invoice_url = WSL_Print_Controller::create_url([$order->get_id()], 'invoice');
+parse_str((string) parse_url($invoice_url, PHP_URL_QUERY), $invoice_query);
+$invoice_request = WSL_Print_Controller::verify_document_request($invoice_query['payload'] ?? '', $invoice_query['signature'] ?? '');
+if (($invoice_request['document'] ?? '') !== 'invoice' || ($invoice_request['ids'] ?? []) !== [$order->get_id()]) {
+    fwrite(STDERR, "Invoice print URL failed\n");
+    exit(1);
+}
 ob_start();
 WSL_Admin::metabox($order);
 $metabox = (string) ob_get_clean();
-if (!str_contains($metabox, '<a ') || str_contains($metabox, '<form')) {
+if (!str_contains($metabox, 'چاپ لیبل') || !str_contains($metabox, 'چاپ فاکتور') || str_contains($metabox, '<form')) {
     fwrite(STDERR, "Single-order print control failed\n");
     exit(1);
 }
 wp_delete_post($order->get_id(), true);
 
-echo 'ACTIVE WordPress=' . get_bloginfo('version') . ' WooCommerce=' . WC_VERSION . ' storage=' . (get_option('woocommerce_custom_orders_table_enabled') === 'yes' ? 'HPOS' : 'CPT') . ' layout=4 order-render=PASS print-url=PASS single-link=PASS' . PHP_EOL;
+echo 'ACTIVE WordPress=' . get_bloginfo('version') . ' WooCommerce=' . WC_VERSION . ' storage=' . (get_option('woocommerce_custom_orders_table_enabled') === 'yes' ? 'HPOS' : 'CPT') . ' layout=4 order-render=PASS label-url=PASS invoice-url=PASS single-links=PASS' . PHP_EOL;

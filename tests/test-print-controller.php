@@ -7,7 +7,12 @@ if (!function_exists('admin_url')) { function admin_url($path='') { return 'http
 if (!function_exists('wp_create_nonce')) { function wp_create_nonce($action) { return 'nonce-' . $action; } }
 if (!function_exists('wp_salt')) { function wp_salt($scheme='auth') { return 'unit-test-secret-' . $scheme; } }
 if (!function_exists('add_query_arg')) {
-    function add_query_arg($args, $url) {
+    function add_query_arg($args, $value = null, $url = null) {
+        if (!is_array($args)) {
+            $args = [(string) $args => $value];
+        } else {
+            $url = $value;
+        }
         return $url . (str_contains($url, '?') ? '&' : '?') . http_build_query($args);
     }
 }

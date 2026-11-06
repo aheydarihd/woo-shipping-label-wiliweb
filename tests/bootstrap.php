@@ -38,6 +38,7 @@ if (!function_exists('wp_get_attachment_image_url')) {
     }
 }
 if (!function_exists('__')) { function __($v, $domain = null): string { return (string) $v; } }
+if (!function_exists('esc_html__')) { function esc_html__($v, $domain = null): string { return esc_html($v); } }
 if (!function_exists('esc_html_e')) { function esc_html_e($v, $domain = null): void { echo esc_html($v); } }
 
 function wsl_assert(bool $condition, string $message): void {
