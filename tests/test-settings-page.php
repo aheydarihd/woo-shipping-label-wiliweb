@@ -5,6 +5,7 @@ if (!defined('ABSPATH')) define('ABSPATH', __DIR__ . '/');
 if (!defined('WSL_VERSION')) define('WSL_VERSION', 'test');
 if (!defined('WSL_URL')) define('WSL_URL', '/plugin/');
 if (!function_exists('add_action')) { function add_action($hook, $callback, $priority = 10, $args = 1) {} }
+if (!function_exists('add_filter')) { function add_filter($hook, $callback, $priority = 10, $args = 1) { $GLOBALS['wsl_filters'][] = $hook; } }
 if (!function_exists('current_user_can')) { function current_user_can($capability, ...$args) { return true; } }
 if (!function_exists('add_submenu_page')) {
     function add_submenu_page(...$args) { $GLOBALS['wsl_submenu_args'] = $args; return 'woocommerce_page_wsl-settings'; }
@@ -20,6 +21,9 @@ require_once dirname(__DIR__) . '/source/woo-shipping-label-wiliweb/includes/cla
 require_once dirname(__DIR__) . '/source/woo-shipping-label-wiliweb/includes/class-wsl-settings.php';
 require_once dirname(__DIR__) . '/source/woo-shipping-label-wiliweb/includes/class-wsl-settings-page.php';
 
+WSL_Settings_Page::register();
+wsl_assert(in_array('option_page_capability_wsl_settings_group', $GLOBALS['wsl_filters'] ?? [], true), 'settings save capability filter registered');
+wsl_assert_same('manage_woocommerce', WSL_Settings_Page::settings_capability(), 'shop manager can submit settings');
 WSL_Settings_Page::menu();
 wsl_assert_same('woocommerce', $GLOBALS['wsl_submenu_args'][0] ?? '', 'settings under WooCommerce');
 wsl_assert_same('فاکتور ساز ویلی وب', $GLOBALS['wsl_submenu_args'][1] ?? '', 'settings page title');
@@ -43,6 +47,7 @@ wsl_assert(str_contains($html, 'name="' . $option . '[modules][invoice_enabled]"
 foreach (WSL_Settings::invoice_field_keys() as $key) {
     wsl_assert(str_contains($html, 'name="' . $option . '[invoice][fields][' . $key . ']"'), 'invoice field control: ' . $key);
 }
+wsl_assert(str_contains($html, 'name="' . $option . '[invoice][fields][fee_total]"'), 'fee visibility control');
 foreach (['template', 'accent', 'font_size', 'show_border'] as $key) {
     wsl_assert(str_contains($html, 'name="' . $option . '[' . $key . ']'), 'legacy label option retained: ' . $key);
 }

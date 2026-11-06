@@ -53,6 +53,10 @@ $invoice = [
         'tax' => $money(0, '۰ تومان'),
         'refund' => $money(10000, '۱۰٬۰۰۰ تومان'),
         'grand_total' => $money(200000, '۲۰۰٬۰۰۰ تومان'),
+        'fees' => [
+            ['name' => 'هزینه بسته‌بندی', 'total' => $money(15000, '۱۵٬۰۰۰ تومان'), 'tax' => $money(0, '۰ تومان')],
+            ['name' => 'اعتبار وفاداری', 'total' => $money(-5000, '۵٬۰۰۰- تومان'), 'tax' => $money(0, '۰ تومان')],
+        ],
     ],
     'notes' => ['customer' => '', 'footer' => 'از خرید شما سپاسگزاریم'],
 ];
@@ -71,6 +75,8 @@ wsl_assert(str_contains($modern, 'SHOE-RED-42'), 'SKU printed');
 wsl_assert(str_contains($modern, 'رنگ: قرمز، سایز: ۴۲'), 'variation printed');
 wsl_assert(str_contains($modern, '>2<'), 'quantity printed');
 wsl_assert(str_contains($modern, '۲۰۰٬۰۰۰ تومان'), 'grand total printed');
+wsl_assert(str_contains($modern, 'هزینه بسته‌بندی'), 'modern positive fee printed');
+wsl_assert(str_contains($modern, 'اعتبار وفاداری'), 'modern negative fee printed');
 wsl_assert(str_contains($modern, '&lt;script&gt;1042&lt;/script&gt;'), 'order number escaped');
 wsl_assert(str_contains($modern, 'فروشگاه &lt;b&gt;ویلی وب&lt;/b&gt;'), 'seller name escaped');
 wsl_assert(!str_contains($modern, '<script>1042</script>'), 'unsafe order HTML absent');
@@ -96,6 +102,8 @@ $classic_settings['invoice']['template'] = 'classic';
 $classic = WSL_Invoice_Renderer::invoice($invoice, $classic_settings);
 wsl_assert(str_contains($classic, 'wsl-invoice--classic'), 'classic template class');
 wsl_assert(str_contains($classic, 'wsl-invoice__signature'), 'classic signature space');
+wsl_assert(str_contains($classic, 'هزینه بسته‌بندی'), 'classic positive fee printed');
+wsl_assert(str_contains($classic, 'اعتبار وفاداری'), 'classic negative fee printed');
 
 $classic_hidden = $classic_settings;
 foreach (['seller_contact', 'seller_address', 'buyer_phone', 'buyer_email', 'buyer_address', 'buyer_postcode'] as $field) {

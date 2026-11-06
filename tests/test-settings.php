@@ -32,6 +32,7 @@ $horizontal = WSL_Settings::sanitize(['layout' => ['per_page' => 4, 'orientation
 wsl_assert_same('landscape', $horizontal['layout']['orientation'], 'horizontal labels saved');
 
 $invoice_keys = WSL_Settings::invoice_field_keys();
+wsl_assert(in_array('fee_total', $invoice_keys, true), 'invoice fee visibility setting exists');
 wsl_assert_same(true, $defaults['modules']['labels_enabled'], 'labels module enabled by default');
 wsl_assert_same(true, $defaults['modules']['invoice_enabled'], 'invoice module enabled by default');
 wsl_assert_same('modern', $defaults['invoice']['template'], 'modern invoice is default');

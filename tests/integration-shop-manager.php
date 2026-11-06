@@ -26,6 +26,11 @@ $previous_settings = get_option(WSL_Settings::OPTION, null);
 try {
     (new WP_User($user_id))->set_role('shop_manager');
     wp_set_current_user($user_id);
+    WSL_Settings_Page::register(); // CLI bootstrap is not an admin request, so register the admin-only hooks explicitly.
+    $settings_capability = apply_filters('option_page_capability_wsl_settings_group', 'manage_options');
+    if ($settings_capability !== 'manage_woocommerce' || !current_user_can($settings_capability)) {
+        throw new RuntimeException('Shop manager settings submission capability failed.');
+    }
     $settings = WSL_Settings::defaults();
     update_option(WSL_Settings::OPTION, $settings);
     $order = wc_create_order();

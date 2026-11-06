@@ -46,6 +46,7 @@ final class WSL_Order_Data {
     public static function invoice_from_order(WC_Order $order, array $settings): array {
         $shipping_name = trim($order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name());
         $billing_name = trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name());
+        $currency = (string) $order->get_currency();
         $sender_defaults = ['name' => '', 'phone' => '', 'province' => '', 'city' => '', 'address' => '', 'postcode' => '', 'website' => '', 'logo_id' => 0];
         $sender = array_merge($sender_defaults, is_array($settings['sender'] ?? null) ? $settings['sender'] : []);
         $invoice_settings = is_array($settings['invoice'] ?? null) ? $settings['invoice'] : [];
@@ -90,11 +91,20 @@ final class WSL_Order_Data {
                 'sku' => $sku,
                 'variation' => implode('، ', $variation),
                 'quantity' => $quantity,
-                'unit_price' => self::money($quantity > 0 ? $subtotal / $quantity : 0),
-                'subtotal' => self::money($subtotal),
-                'discount' => self::money(max(0, $subtotal - $total)),
-                'total' => self::money($total),
-                'tax' => self::money((float) $item->get_total_tax()),
+                'unit_price' => self::money($quantity > 0 ? $subtotal / $quantity : 0, $currency),
+                'subtotal' => self::money($subtotal, $currency),
+                'discount' => self::money(max(0, $subtotal - $total), $currency),
+                'total' => self::money($total, $currency),
+                'tax' => self::money((float) $item->get_total_tax(), $currency),
+            ];
+        }
+
+        $fees = [];
+        foreach ($order->get_items('fee') as $fee) {
+            $fees[] = [
+                'name' => wp_strip_all_tags((string) $fee->get_name()),
+                'total' => self::money((float) $fee->get_total(), $currency),
+                'tax' => self::money((float) $fee->get_total_tax(), $currency),
             ];
         }
 
@@ -123,25 +133,26 @@ final class WSL_Order_Data {
                 'logo_id' => absint($invoice_settings['logo_id'] ?? 0) ?: absint($sender['logo_id']),
             ],
             'buyer' => [
-                'name' => self::fallback($shipping_name, $billing_name),
+                'name' => self::fallback($billing_name, $shipping_name),
                 'phone' => self::digits($order->get_billing_phone()),
                 'email' => sanitize_text_field($order->get_billing_email()),
-                'province' => self::state_name(self::fallback($order->get_shipping_state(), $order->get_billing_state())),
-                'city' => self::fallback($order->get_shipping_city(), $order->get_billing_city()),
+                'province' => self::state_name(self::fallback($order->get_billing_state(), $order->get_shipping_state())),
+                'city' => self::fallback($order->get_billing_city(), $order->get_shipping_city()),
                 'address' => self::address(
-                    self::fallback($order->get_shipping_address_1(), $order->get_billing_address_1()),
-                    self::fallback($order->get_shipping_address_2(), $order->get_billing_address_2())
+                    self::fallback($order->get_billing_address_1(), $order->get_shipping_address_1()),
+                    self::fallback($order->get_billing_address_2(), $order->get_shipping_address_2())
                 ),
-                'postcode' => self::digits(self::fallback($order->get_shipping_postcode(), $order->get_billing_postcode())),
+                'postcode' => self::digits(self::fallback($order->get_billing_postcode(), $order->get_shipping_postcode())),
             ],
             'items' => $items,
             'totals' => [
-                'subtotal' => self::money((float) $order->get_subtotal()),
-                'discount' => self::money((float) $order->get_discount_total()),
-                'shipping' => self::money((float) $order->get_shipping_total()),
-                'tax' => self::money((float) $order->get_total_tax()),
-                'refund' => self::money(abs((float) $order->get_total_refunded())),
-                'grand_total' => self::money((float) $order->get_total()),
+                'subtotal' => self::money((float) $order->get_subtotal(), $currency),
+                'discount' => self::money((float) $order->get_discount_total(), $currency),
+                'shipping' => self::money((float) $order->get_shipping_total(), $currency),
+                'fees' => $fees,
+                'tax' => self::money((float) $order->get_total_tax(), $currency),
+                'refund' => self::money(abs((float) $order->get_total_refunded()), $currency),
+                'grand_total' => self::money((float) $order->get_total(), $currency),
             ],
             'notes' => [
                 'customer' => wp_strip_all_tags((string) $order->get_customer_note()),
@@ -150,11 +161,11 @@ final class WSL_Order_Data {
         ];
     }
 
-    private static function money($value): array {
+    private static function money($value, string $currency = ''): array {
         $raw = (float) $value;
         return [
             'raw' => $raw,
-            'formatted' => wp_strip_all_tags((string) wc_price($raw)),
+            'formatted' => wp_strip_all_tags((string) wc_price($raw, $currency !== '' ? ['currency' => $currency] : [])),
         ];
     }
 

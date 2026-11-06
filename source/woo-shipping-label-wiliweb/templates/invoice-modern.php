@@ -71,6 +71,7 @@
             <?php echo WSL_Invoice_Renderer::total_row($settings, 'subtotal', 'جمع جزء', $invoice['totals']['subtotal'] ?? []); ?>
             <?php echo WSL_Invoice_Renderer::total_row($settings, 'discount_total', 'تخفیف', $invoice['totals']['discount'] ?? []); ?>
             <?php echo WSL_Invoice_Renderer::total_row($settings, 'shipping_total', 'هزینه ارسال', $invoice['totals']['shipping'] ?? []); ?>
+            <?php echo WSL_Invoice_Renderer::fee_rows($settings, $invoice['totals']['fees'] ?? []); ?>
             <?php echo WSL_Invoice_Renderer::total_row($settings, 'tax_total', 'مالیات', $invoice['totals']['tax'] ?? []); ?>
             <?php echo WSL_Invoice_Renderer::total_row($settings, 'refund_total', 'بازپرداخت', $invoice['totals']['refund'] ?? []); ?>
             <?php echo WSL_Invoice_Renderer::total_row($settings, 'grand_total', 'مبلغ نهایی', $invoice['totals']['grand_total'] ?? [], true); ?>

@@ -6,6 +6,11 @@ final class WSL_Settings_Page {
         add_action('admin_menu', [self::class, 'menu']);
         add_action('admin_init', [self::class, 'settings']);
         add_action('admin_enqueue_scripts', [self::class, 'assets']);
+        add_filter('option_page_capability_wsl_settings_group', [self::class, 'settings_capability']);
+    }
+
+    public static function settings_capability(): string {
+        return 'manage_woocommerce';
     }
 
     public static function menu(): void {
@@ -72,7 +77,7 @@ final class WSL_Settings_Page {
             'سربرگ و سفارش' => ['logo' => 'لوگو', 'order_number' => 'شماره سفارش', 'order_date' => 'تاریخ سفارش', 'order_status' => 'وضعیت سفارش', 'barcode' => 'بارکد سفارش'],
             'فروشنده و خریدار' => ['seller_contact' => 'تماس فروشنده', 'seller_address' => 'نشانی فروشنده', 'buyer_phone' => 'موبایل خریدار', 'buyer_email' => 'ایمیل خریدار', 'buyer_address' => 'نشانی خریدار', 'buyer_postcode' => 'کدپستی خریدار'],
             'جدول محصولات' => ['product_image' => 'تصویر محصول', 'sku' => 'شناسه SKU', 'variation' => 'ویژگی‌های محصول', 'unit_price' => 'قیمت واحد', 'quantity' => 'تعداد', 'line_discount' => 'تخفیف ردیف', 'line_total' => 'مبلغ ردیف'],
-            'مبالغ و پایین فاکتور' => ['subtotal' => 'جمع جزء', 'discount_total' => 'تخفیف سفارش', 'shipping_total' => 'هزینه ارسال', 'tax_total' => 'مالیات', 'refund_total' => 'بازپرداخت', 'grand_total' => 'مبلغ نهایی', 'payment_method' => 'روش پرداخت', 'shipping_method' => 'روش ارسال', 'customer_note' => 'یادداشت مشتری', 'footer_note' => 'پیام فروشگاه', 'signature' => 'محل مهر و امضا'],
+            'مبالغ و پایین فاکتور' => ['subtotal' => 'جمع جزء', 'discount_total' => 'تخفیف سفارش', 'shipping_total' => 'هزینه ارسال', 'fee_total' => 'هزینه‌های جانبی', 'tax_total' => 'مالیات', 'refund_total' => 'بازپرداخت', 'grand_total' => 'مبلغ نهایی', 'payment_method' => 'روش پرداخت', 'shipping_method' => 'روش ارسال', 'customer_note' => 'یادداشت مشتری', 'footer_note' => 'پیام فروشگاه', 'signature' => 'محل مهر و امضا'],
         ];
         ?>
         <section class="wsl-card"><div class="wsl-card-heading"><div><span class="wsl-eyebrow">قالب چاپ A4</span><h2>ظاهر فاکتور</h2><p>یک طرح فروشگاهی مدرن یا نسخه رسمی و کم‌رنگ را انتخاب کنید.</p></div></div>

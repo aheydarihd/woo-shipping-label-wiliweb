@@ -9,12 +9,12 @@ if (!class_exists('WC_Order')) {
         }
         public function get_id(): int { return (int) ($this->data['id'] ?? 0); }
         public function get_order_number(): string { return (string) ($this->data['order_number'] ?? $this->get_id()); }
-        public function get_items(): array { return $this->data['items'] ?? []; }
+        public function get_items(string $type = 'line_item'): array { return $type === 'fee' ? ($this->data['fees'] ?? []) : ($this->data['items'] ?? []); }
         public function get_date_created() { return $this->data['date_created'] ?? null; }
     }
 }
 if (!function_exists('wc_get_order_status_name')) { function wc_get_order_status_name($status) { return 'status:' . $status; } }
-if (!function_exists('wc_price')) { function wc_price($value) { return 'WC_PRICE[' . $value . ']'; } }
+if (!function_exists('wc_price')) { function wc_price($value, array $args = []) { return 'WC_PRICE[' . ($args['currency'] ?? 'DEFAULT') . ':' . $value . ']'; } }
 if (!function_exists('wp_strip_all_tags')) { function wp_strip_all_tags($value) { return strip_tags((string) $value); } }
 if (!function_exists('wp_date')) { function wp_date($format, $timestamp = null) { return '1405/08/15'; } }
 if (!function_exists('wc_get_product')) {
@@ -57,6 +57,13 @@ final class WSL_Invoice_Test_Item {
     public function get_formatted_meta_data(string $hideprefix = '_', bool $include_all = false): array { return $this->meta; }
 }
 
+final class WSL_Invoice_Test_Fee {
+    public function __construct(private string $name, private string $total, private string $tax) {}
+    public function get_name(): string { return $this->name; }
+    public function get_total(): string { return $this->total; }
+    public function get_total_tax(): string { return $this->tax; }
+}
+
 $GLOBALS['wsl_test_images'] = [501 => 'https://example.test/variation.jpg', 502 => 'https://example.test/parent.jpg'];
 $parent = new WSL_Invoice_Test_Product(100, 502, 'PARENT-SKU');
 $variation_with_image = new WSL_Invoice_Test_Product(101, 501, 'VAR-RED', 100);
@@ -85,9 +92,16 @@ $order = new WC_Order([
     'shipping_address_1' => 'خیابان ولیعصر',
     'shipping_address_2' => 'پلاک ۱۲',
     'shipping_postcode' => '۱۲۳۴۵۶۷۸۹۰',
-    'billing_city' => 'تهران',
+    'billing_first_name' => 'مریم',
+    'billing_last_name' => 'احمدی',
+    'billing_state' => 'البرز',
+    'billing_city' => 'کرج',
+    'billing_address_1' => 'بلوار اصلی',
+    'billing_address_2' => 'پلاک ۵',
+    'billing_postcode' => '۹۸۷۶۵۴۳۲۱۰',
     'billing_phone' => '۰۹۱۲۱۲۳۴۵۶۷',
     'billing_email' => 'sara@example.test',
+    'currency' => 'EUR',
     'subtotal' => '480000',
     'discount_total' => '50000',
     'shipping_total' => '30000',
@@ -96,6 +110,10 @@ $order = new WC_Order([
     'total' => '475000',
     'customer_note' => '<b>بعدازظهر ارسال شود</b>',
     'items' => $items,
+    'fees' => [
+        new WSL_Invoice_Test_Fee('هزینه بسته‌بندی', '20000', '2000'),
+        new WSL_Invoice_Test_Fee('اعتبار وفاداری', '-5000', '0'),
+    ],
 ]);
 $settings = [
     'sender' => [
@@ -120,10 +138,11 @@ wsl_assert_same('INV-77', $invoice['order']['barcode'], 'barcode value');
 wsl_assert_same(99, $invoice['seller']['logo_id'], 'invoice logo wins over sender logo');
 wsl_assert_same('0211234', $invoice['seller']['phone'], 'seller phone normalized');
 wsl_assert_same('تهران، تهران، بازار بزرگ', $invoice['seller']['address'], 'seller address combined');
-wsl_assert_same('سارا محمدی', $invoice['buyer']['name'], 'shipping buyer name');
-wsl_assert_same('تهران', $invoice['buyer']['city'], 'billing city fallback');
+wsl_assert_same('مریم احمدی', $invoice['buyer']['name'], 'billing identity is invoice buyer');
+wsl_assert_same('کرج', $invoice['buyer']['city'], 'billing city is invoice buyer city');
+wsl_assert_same('بلوار اصلی، پلاک ۵', $invoice['buyer']['address'], 'billing address is invoice buyer address');
 wsl_assert_same('09121234567', $invoice['buyer']['phone'], 'buyer phone normalized');
-wsl_assert_same('1234567890', $invoice['buyer']['postcode'], 'buyer postcode normalized');
+wsl_assert_same('9876543210', $invoice['buyer']['postcode'], 'billing postcode normalized');
 
 wsl_assert_same('پیراهن', $invoice['items'][0]['name'], 'item name stripped');
 wsl_assert_same('https://example.test/variation.jpg', $invoice['items'][0]['image_url'], 'variation image preferred');
@@ -131,16 +150,22 @@ wsl_assert_same('VAR-RED', $invoice['items'][0]['sku'], 'variation SKU');
 wsl_assert_same('رنگ: قرمز', $invoice['items'][0]['variation'], 'public variation metadata');
 wsl_assert(!str_contains($invoice['items'][0]['variation'], 'مخفی'), 'private metadata hidden');
 wsl_assert_same(2, $invoice['items'][0]['quantity'], 'item quantity');
-wsl_assert_same('WC_PRICE[150000]', $invoice['items'][0]['unit_price']['formatted'], 'unit price uses wc_price');
-wsl_assert_same('WC_PRICE[50000]', $invoice['items'][0]['discount']['formatted'], 'line discount uses wc_price');
+wsl_assert_same('WC_PRICE[EUR:150000]', $invoice['items'][0]['unit_price']['formatted'], 'unit price uses order currency');
+wsl_assert_same('WC_PRICE[EUR:50000]', $invoice['items'][0]['discount']['formatted'], 'line discount uses order currency');
 wsl_assert_same('https://example.test/parent.jpg', $invoice['items'][1]['image_url'], 'parent image fallback');
 wsl_assert_same('', $invoice['items'][2]['image_url'], 'deleted product image empty');
 wsl_assert_same('bad()محصول حذف‌شده', $invoice['items'][2]['name'], 'deleted product still printable and sanitized');
 
 wsl_assert_same(480000.0, $invoice['totals']['subtotal']['raw'], 'subtotal raw');
-wsl_assert_same('WC_PRICE[480000]', $invoice['totals']['subtotal']['formatted'], 'subtotal formatted by WooCommerce');
+wsl_assert_same('WC_PRICE[EUR:480000]', $invoice['totals']['subtotal']['formatted'], 'subtotal formatted in order currency');
+wsl_assert_same(2, count($invoice['totals']['fees']), 'positive and negative fees retained');
+wsl_assert_same('هزینه بسته‌بندی', $invoice['totals']['fees'][0]['name'], 'fee name retained');
+wsl_assert_same('WC_PRICE[EUR:20000]', $invoice['totals']['fees'][0]['total']['formatted'], 'positive fee formatted in order currency');
+wsl_assert_same(-5000.0, $invoice['totals']['fees'][1]['total']['raw'], 'negative fee retained');
+wsl_assert_same('WC_PRICE[EUR:-5000]', $invoice['totals']['fees'][1]['total']['formatted'], 'negative fee formatted in order currency');
+wsl_assert_same(2000.0, $invoice['totals']['fees'][0]['tax']['raw'], 'fee tax retained for reconciliation');
 wsl_assert_same(10000.0, $invoice['totals']['refund']['raw'], 'refund raw');
-wsl_assert_same('WC_PRICE[475000]', $invoice['totals']['grand_total']['formatted'], 'grand total formatted');
+wsl_assert_same('WC_PRICE[EUR:475000]', $invoice['totals']['grand_total']['formatted'], 'grand total formatted in order currency');
 wsl_assert_same('بعدازظهر ارسال شود', $invoice['notes']['customer'], 'customer note sanitized');
 wsl_assert_same('سپاس از خرید شما', $invoice['notes']['footer'], 'footer note sanitized');
 
@@ -151,6 +176,6 @@ $free_order = new WC_Order([
 ]);
 $free = WSL_Order_Data::invoice_from_order($free_order, $settings);
 wsl_assert_same(0.0, $free['items'][0]['unit_price']['raw'], 'zero quantity avoids division by zero');
-wsl_assert_same('WC_PRICE[0]', $free['totals']['grand_total']['formatted'], 'free order total remains visible');
+wsl_assert_same('WC_PRICE[DEFAULT:0]', $free['totals']['grand_total']['formatted'], 'free order total remains visible');
 
 unset($GLOBALS['wsl_test_images'], $GLOBALS['wsl_test_products']);

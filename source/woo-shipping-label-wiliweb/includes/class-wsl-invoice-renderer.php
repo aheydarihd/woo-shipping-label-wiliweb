@@ -43,6 +43,17 @@ final class WSL_Invoice_Renderer {
         return '<div class="wsl-invoice-total' . ($emphasis ? ' is-grand' : '') . '"><span>' . esc_html($label) . '</span><strong>' . esc_html((string) $money['formatted']) . '</strong></div>';
     }
 
+    public static function fee_rows(array $settings, array $fees): string {
+        if (!self::enabled($settings, 'fee_total')) {
+            return '';
+        }
+        $html = '';
+        foreach ($fees as $fee) {
+            $html .= self::total_row($settings, 'fee_total', (string) ($fee['name'] ?? ''), is_array($fee['total'] ?? null) ? $fee['total'] : []);
+        }
+        return $html;
+    }
+
     public static function buyer_address(array $buyer): string {
         return implode('، ', array_filter([
             trim((string) ($buyer['province'] ?? '')),

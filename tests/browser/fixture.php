@@ -24,7 +24,7 @@ if ($document === 'invoice') {
     $invoiceTemplate = $template === 'classic' ? 'classic' : 'modern';
     $itemCount = max(1, min(60, (int) ($_GET['items'] ?? 3)));
     $invoiceCount = max(1, min(5, (int) ($_GET['invoices'] ?? 1)));
-    $invoiceFields = array_fill_keys(['logo','seller_contact','seller_address','buyer_phone','buyer_email','buyer_address','buyer_postcode','order_number','order_date','order_status','payment_method','shipping_method','product_image','sku','variation','unit_price','quantity','line_discount','line_total','subtotal','discount_total','shipping_total','tax_total','refund_total','grand_total','customer_note','footer_note','signature','barcode'], true);
+    $invoiceFields = array_fill_keys(['logo','seller_contact','seller_address','buyer_phone','buyer_email','buyer_address','buyer_postcode','order_number','order_date','order_status','payment_method','shipping_method','product_image','sku','variation','unit_price','quantity','line_discount','line_total','subtotal','discount_total','shipping_total','fee_total','tax_total','refund_total','grand_total','customer_note','footer_note','signature','barcode'], true);
     $settings = ['invoice' => ['template' => $invoiceTemplate, 'title' => 'فاکتور فروش', 'accent' => '#155eef', 'fields' => $invoiceFields]];
     $money = static fn($value): array => ['raw' => (float) $value, 'formatted' => number_format((float) $value) . ' تومان'];
     $image = 'data:image/svg+xml,' . rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="120" height="120" fill="#e8eefc"/><circle cx="60" cy="60" r="30" fill="#155eef"/></svg>');
@@ -39,7 +39,7 @@ if ($document === 'invoice') {
             'seller' => ['name' => 'فروشگاه نمونه', 'phone' => '02112345678', 'address' => 'تهران، بازار بزرگ، پلاک ۱۲', 'postcode' => '1111111111', 'website' => 'example.com', 'logo_id' => 0],
             'buyer' => ['name' => 'علی رضایی', 'phone' => '09121234567', 'email' => 'ali@example.com', 'province' => 'تهران', 'city' => 'تهران', 'address' => 'خیابان آزادی، کوچه نمونه، پلاک ۳۴', 'postcode' => '1234567890'],
             'items' => $items,
-            'totals' => ['subtotal' => $money(600000), 'discount' => $money(30000), 'shipping' => $money(40000), 'tax' => $money(0), 'refund' => $money(0), 'grand_total' => $money(610000)],
+            'totals' => ['subtotal' => $money(600000), 'discount' => $money(30000), 'shipping' => $money(40000), 'fees' => [['name' => 'هزینه بسته‌بندی', 'total' => $money(15000), 'tax' => $money(0)]], 'tax' => $money(0), 'refund' => $money(0), 'grand_total' => $money(625000)],
             'notes' => ['customer' => 'ارسال در ساعات اداری', 'footer' => 'از خرید شما سپاسگزاریم'],
         ];
     }

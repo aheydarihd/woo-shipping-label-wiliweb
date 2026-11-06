@@ -31,12 +31,12 @@ if (!class_exists('WC_Order')) {
         public function get_status(): string { return (string) ($this->data['status'] ?? 'processing'); }
         public function get_customer_note(): string { return (string) ($this->data['customer_note'] ?? ''); }
         public function get_total(): string { return (string) ($this->data['total'] ?? ''); }
-        public function get_items(): array { return $this->data['items'] ?? []; }
+        public function get_items(string $type = 'line_item'): array { return $type === 'fee' ? ($this->data['fees'] ?? []) : ($this->data['items'] ?? []); }
         public function get_date_created() { return $this->data['date_created'] ?? null; }
     }
 }
 if (!function_exists('wc_get_order_status_name')) { function wc_get_order_status_name($s) { return 'status:' . $s; } }
-if (!function_exists('wc_price')) { function wc_price($v) { return 'WC_PRICE[' . $v . ']'; } }
+if (!function_exists('wc_price')) { function wc_price($v, array $args = []) { return 'WC_PRICE[' . ($args['currency'] ?? 'DEFAULT') . ':' . $v . ']'; } }
 if (!function_exists('wp_strip_all_tags')) { function wp_strip_all_tags($v) { return strip_tags((string) $v); } }
 if (!function_exists('wp_date')) { function wp_date($format, $timestamp = null) { return '1405/08/15'; } }
 

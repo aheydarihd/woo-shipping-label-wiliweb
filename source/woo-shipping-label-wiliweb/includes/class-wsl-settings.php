@@ -21,7 +21,7 @@ final class WSL_Settings {
             'buyer_address', 'buyer_postcode', 'order_number', 'order_date', 'order_status',
             'payment_method', 'shipping_method', 'product_image', 'sku', 'variation',
             'unit_price', 'quantity', 'line_discount', 'line_total', 'subtotal',
-            'discount_total', 'shipping_total', 'tax_total', 'refund_total', 'grand_total',
+            'discount_total', 'shipping_total', 'fee_total', 'tax_total', 'refund_total', 'grand_total',
             'customer_note', 'footer_note', 'signature', 'barcode',
         ];
     }
