@@ -82,8 +82,12 @@ final class WSL_GitHub_Updater {
         if (!$release) {
             return $result;
         }
+        return self::build_information($release);
+    }
+
+    public static function build_information(array $release): object {
         return (object) [
-            'name' => 'لیبل پستی ووکامرس WiliWeb',
+            'name' => 'فاکتور ساز ویلی وب',
             'slug' => self::SLUG,
             'version' => $release['version'],
             'author' => '<a href="https://wiliweb.com">WiliWeb</a>',
@@ -92,7 +96,7 @@ final class WSL_GitHub_Updater {
             'requires_php' => '8.1',
             'download_link' => $release['package'],
             'sections' => [
-                'description' => 'چاپ تکی و گروهی لیبل پستی سفارش‌های ووکامرس با چیدمان قابل تنظیم A4.',
+                'description' => 'صدور و چاپ مدیریتی فاکتور فروش و لیبل پستی ووکامرس با قالب فارسی، تصاویر محصول و عملیات تکی و گروهی.',
                 'changelog' => nl2br(esc_html($release['notes'])),
             ],
         ];

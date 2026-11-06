@@ -101,7 +101,7 @@ final class WSL_Print_Controller {
 
     public static function render(): void {
         if (!current_user_can('edit_shop_orders') && !current_user_can('manage_woocommerce')) {
-            wp_die(esc_html__('شما اجازه چاپ لیبل سفارش‌ها را ندارید.', 'woo-shipping-label-wiliweb'), '', ['response' => 403]);
+            wp_die(esc_html__('شما اجازه چاپ اسناد سفارش‌ها را ندارید.', 'woo-shipping-label-wiliweb'), '', ['response' => 403]);
         }
         $payload = wp_unslash($_GET['payload'] ?? '');
         $signature = strtolower(preg_replace('/[^a-fA-F0-9]/', '', (string) wp_unslash($_GET['signature'] ?? '')) ?: '');
