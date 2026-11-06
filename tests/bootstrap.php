@@ -32,7 +32,11 @@ if (!function_exists('get_option')) {
 if (!function_exists('esc_html')) { function esc_html($v): string { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); } }
 if (!function_exists('esc_attr')) { function esc_attr($v): string { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); } }
 if (!function_exists('esc_url')) { function esc_url($v): string { return (string) $v; } }
-if (!function_exists('wp_get_attachment_image_url')) { function wp_get_attachment_image_url($id, $size) { return ''; } }
+if (!function_exists('wp_get_attachment_image_url')) {
+    function wp_get_attachment_image_url($id, $size) {
+        return $GLOBALS['wsl_test_images'][(int) $id] ?? '';
+    }
+}
 if (!function_exists('__')) { function __($v, $domain = null): string { return (string) $v; } }
 if (!function_exists('esc_html_e')) { function esc_html_e($v, $domain = null): void { echo esc_html($v); } }
 
