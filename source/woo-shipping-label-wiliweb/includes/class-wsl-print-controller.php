@@ -128,7 +128,7 @@ final class WSL_Print_Controller {
         if ($document === 'invoice' && !class_exists('WSL_Invoice_Renderer')) {
             wp_die(esc_html__('موتور چاپ فاکتور در دسترس نیست.', 'woo-shipping-label-wiliweb'), '', ['response' => 503]);
         }
-        $labels = [];
+        $entries = [];
         $skipped = 0;
         foreach (self::parse_ids($ids) as $id) {
             $order = wc_get_order($id);
@@ -136,11 +136,17 @@ final class WSL_Print_Controller {
                 $skipped++;
                 continue;
             }
-            $labels[] = WSL_Order_Data::from_order($order, $settings);
+            $entries[] = $document === 'invoice'
+                ? WSL_Order_Data::invoice_from_order($order, $settings)
+                : WSL_Order_Data::from_order($order, $settings);
         }
         nocache_headers();
         header('X-Robots-Tag: noindex, nofollow', true);
-        WSL_Renderer::page($labels, $settings, $skipped);
+        if ($document === 'invoice') {
+            WSL_Invoice_Renderer::page($entries, $settings, $skipped);
+        } else {
+            WSL_Renderer::page($entries, $settings, $skipped);
+        }
         exit;
     }
 

@@ -46,7 +46,7 @@ if ($mode === 'old-label') {
         '_wsl_nonce' => wp_create_nonce('wsl_render_' . $signature),
     ];
 } else {
-    $document = str_starts_with($mode, 'invoice-') ? 'invoice' : 'label';
+    $document = ($mode === 'invoice' || str_starts_with($mode, 'invoice-')) ? 'invoice' : 'label';
     $url = WSL_Print_Controller::create_url([$order->get_id()], $document);
     parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
 }
@@ -80,8 +80,10 @@ register_shutdown_function(static function () use ($order, $mode, $previous_sett
     }
     if ($mode === 'invoice-disabled') {
         $valid = str_contains($html, 'این بخش چاپ در تنظیمات افزونه غیرفعال است');
-    } elseif ($mode === 'invoice-unavailable') {
-        $valid = str_contains($html, 'موتور چاپ فاکتور در دسترس نیست');
+    } elseif ($mode === 'invoice') {
+        $valid = str_contains($html, 'wsl-invoice-document')
+            && str_contains($html, 'گیرنده آزمایشی')
+            && !str_contains($html, 'درخواست چاپ منقضی یا نامعتبر است');
     } else {
         $valid = str_contains($html, 'wsl-document')
             && str_contains($html, 'گیرنده آزمایشی')
@@ -90,6 +92,7 @@ register_shutdown_function(static function () use ($order, $mode, $previous_sett
     $label = strtoupper(str_replace('-', '_', $mode));
     fwrite($valid ? STDOUT : STDERR, $valid ? "ENDPOINT_{$label}=PASS\n" : "ENDPOINT_{$label}=FAIL\n");
     if (!$valid) {
+        fwrite(STDERR, substr(wp_strip_all_tags($html), 0, 1200) . PHP_EOL);
         http_response_code(500);
     }
 });

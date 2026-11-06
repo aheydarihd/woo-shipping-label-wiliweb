@@ -25,6 +25,7 @@ require_once WSL_PATH . 'includes/class-wsl-layout.php';
 require_once WSL_PATH . 'includes/class-wsl-settings.php';
 require_once WSL_PATH . 'includes/class-wsl-order-data.php';
 require_once WSL_PATH . 'includes/class-wsl-renderer.php';
+require_once WSL_PATH . 'includes/class-wsl-invoice-renderer.php';
 require_once WSL_PATH . 'includes/class-wsl-print-controller.php';
 require_once WSL_PATH . 'includes/class-wsl-admin.php';
 require_once WSL_PATH . 'includes/class-wsl-settings-page.php';
