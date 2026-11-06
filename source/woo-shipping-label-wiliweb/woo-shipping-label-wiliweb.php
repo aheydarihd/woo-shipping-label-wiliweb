@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: لیبل پستی ووکامرس WiliWeb
+ * Plugin Name: فاکتور ساز ویلی وب
  * Plugin URI: https://wiliweb.com
- * Description: چاپ تکی و گروهی لیبل پستی سفارش‌های ووکامرس با چیدمان قابل تنظیم A4.
+ * Description: صدور و چاپ مدیریتی فاکتور فروش و لیبل پستی سفارش‌های ووکامرس با قالب فارسی و تنظیمات مستقل.
  * Version: 1.0.6
  * Author: WiliWeb
  * Author URI: https://wiliweb.com

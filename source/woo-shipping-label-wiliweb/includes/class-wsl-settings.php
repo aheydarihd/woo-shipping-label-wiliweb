@@ -15,15 +15,33 @@ final class WSL_Settings {
         ];
     }
 
+    public static function invoice_field_keys(): array {
+        return [
+            'logo', 'seller_contact', 'seller_address', 'buyer_phone', 'buyer_email',
+            'buyer_address', 'buyer_postcode', 'order_number', 'order_date', 'order_status',
+            'payment_method', 'shipping_method', 'product_image', 'sku', 'variation',
+            'unit_price', 'quantity', 'line_discount', 'line_total', 'subtotal',
+            'discount_total', 'shipping_total', 'tax_total', 'refund_total', 'grand_total',
+            'customer_note', 'footer_note', 'signature', 'barcode',
+        ];
+    }
+
     public static function defaults(): array {
         $fields = array_fill_keys(self::field_keys(), false);
+        $invoice_fields = array_fill_keys(self::invoice_field_keys(), true);
         foreach (array_slice(self::field_keys(), 0, 12) as $key) {
             $fields[$key] = true;
         }
         foreach (['order_number', 'order_date', 'shipping_method', 'payment_method', 'website', 'logo', 'barcode'] as $key) {
             $fields[$key] = true;
         }
+        $invoice_fields['customer_note'] = false;
+        $invoice_fields['signature'] = false;
         return [
+            'modules' => [
+                'labels_enabled' => true,
+                'invoice_enabled' => true,
+            ],
             'template' => 'table',
             'layout' => WSL_Layout::preset(4),
             'sender' => ['name' => '', 'phone' => '', 'province' => '', 'city' => '', 'address' => '', 'postcode' => '', 'website' => '', 'logo_id' => 0],
@@ -31,12 +49,22 @@ final class WSL_Settings {
             'accent' => '#155eef',
             'font_size' => 11,
             'show_border' => true,
+            'invoice' => [
+                'template' => 'modern',
+                'title' => 'فاکتور فروش',
+                'footer_note' => 'از خرید شما سپاسگزاریم',
+                'accent' => '#155eef',
+                'logo_id' => 0,
+                'fields' => $invoice_fields,
+            ],
         ];
     }
 
     public static function sanitize(array $input): array {
         $defaults = self::defaults();
         $output = $defaults;
+        $output['modules']['labels_enabled'] = !empty($input['modules']['labels_enabled']);
+        $output['modules']['invoice_enabled'] = !empty($input['modules']['invoice_enabled']);
         $output['template'] = in_array(($input['template'] ?? ''), ['table', 'simple'], true) ? $input['template'] : 'table';
         $layout = WSL_Layout::validate(is_array($input['layout'] ?? null) ? $input['layout'] : []);
         $output['layout'] = $layout instanceof WP_Error ? $defaults['layout'] : $layout;
@@ -54,6 +82,16 @@ final class WSL_Settings {
         foreach (self::field_keys() as $key) {
             $output['fields'][$key] = !empty($input['fields'][$key]);
         }
+        $invoice = is_array($input['invoice'] ?? null) ? $input['invoice'] : [];
+        $output['invoice']['template'] = in_array(($invoice['template'] ?? ''), ['modern', 'classic'], true) ? $invoice['template'] : $defaults['invoice']['template'];
+        $output['invoice']['title'] = sanitize_text_field($invoice['title'] ?? $defaults['invoice']['title']);
+        $output['invoice']['footer_note'] = sanitize_text_field($invoice['footer_note'] ?? $defaults['invoice']['footer_note']);
+        $invoice_color = sanitize_hex_color($invoice['accent'] ?? '');
+        $output['invoice']['accent'] = $invoice_color ?: $defaults['invoice']['accent'];
+        $output['invoice']['logo_id'] = absint($invoice['logo_id'] ?? 0);
+        foreach (self::invoice_field_keys() as $key) {
+            $output['invoice']['fields'][$key] = !empty($invoice['fields'][$key]);
+        }
         return $output;
     }
 
@@ -62,6 +100,14 @@ final class WSL_Settings {
         if (!is_array($stored)) {
             return self::defaults();
         }
-        return self::sanitize($stored);
+        return self::sanitize(array_replace_recursive(self::defaults(), $stored));
+    }
+
+    public static function module_enabled(array $settings, string $module): bool {
+        $keys = [
+            'labels' => 'labels_enabled',
+            'invoice' => 'invoice_enabled',
+        ];
+        return isset($keys[$module]) && !empty($settings['modules'][$keys[$module]]);
     }
 }

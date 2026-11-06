@@ -17,7 +17,7 @@ final class WSL_Plugin {
 
     public static function dependency_notice(): void {
         if (current_user_can('activate_plugins')) {
-            echo '<div class="notice notice-error"><p>' . esc_html__('افزونه لیبل پستی WiliWeb برای اجرا به ووکامرس نیاز دارد.', 'woo-shipping-label-wiliweb') . '</p></div>';
+            echo '<div class="notice notice-error"><p>' . esc_html__('فاکتور ساز ویلی وب برای اجرا به ووکامرس نیاز دارد.', 'woo-shipping-label-wiliweb') . '</p></div>';
         }
     }
 }

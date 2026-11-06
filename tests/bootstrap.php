@@ -23,7 +23,11 @@ if (!function_exists('absint')) {
     function absint($value): int { return abs((int) $value); }
 }
 if (!function_exists('get_option')) {
-    function get_option($key, $default = false) { return $default; }
+    function get_option($key, $default = false) {
+        return array_key_exists($key, $GLOBALS['wsl_test_options'] ?? [])
+            ? $GLOBALS['wsl_test_options'][$key]
+            : $default;
+    }
 }
 if (!function_exists('esc_html')) { function esc_html($v): string { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); } }
 if (!function_exists('esc_attr')) { function esc_attr($v): string { return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8'); } }
