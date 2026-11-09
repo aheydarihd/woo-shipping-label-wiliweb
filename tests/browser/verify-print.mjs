@@ -46,6 +46,61 @@ for (const count of [4, 5]) {
   console.log(JSON.stringify({ landscape: 'PASS', result }));
   await page.close();
 }
+{
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await page.goto('http://127.0.0.1:8792/tests/browser/fixture.php?count=2&template=postal', { waitUntil: 'networkidle' });
+  await page.emulateMedia({ media: 'print' });
+  const result = await page.evaluate(async () => {
+    await document.fonts.ready;
+    const sheet = document.querySelector('.wsl-sheet');
+    const labels = [...document.querySelectorAll('.wsl-label--postal')];
+    const first = labels[0];
+    const frame = first ? getComputedStyle(first) : null;
+    return {
+      sheets: document.querySelectorAll('.wsl-sheet').length,
+      labels: labels.length,
+      columns: sheet ? getComputedStyle(sheet).gridTemplateColumns.split(' ').length : 0,
+      rows: sheet ? getComputedStyle(sheet).gridTemplateRows.split(' ').length : 0,
+      wide: first ? first.getBoundingClientRect().width > first.getBoundingClientRect().height : false,
+      noOverflow: labels.every(label => label.scrollWidth <= label.clientWidth && label.scrollHeight <= label.clientHeight),
+      stripedFrame: !!frame && frame.backgroundImage.includes('repeating-linear-gradient'),
+      exactColors: !!frame && (frame.printColorAdjust === 'exact' || frame.webkitPrintColorAdjust === 'exact'),
+      logo: !!document.querySelector('.wsl-postal__logo img'),
+      barcode: !!document.querySelector('.wsl-postal__barcode .wsl-barcode'),
+      fontLoaded: document.fonts.check('12px "WSL Vazirmatn"'),
+    };
+  });
+  const pdfOutput = new URL('./postal-two-up.pdf', import.meta.url).pathname.replace(/^\/(.:)/, '$1');
+  const screenshotOutput = new URL('./postal-two-up.png', import.meta.url).pathname.replace(/^\/(.:)/, '$1');
+  const pdf = await page.pdf({ path: pdfOutput, format: 'A4', printBackground: true, margin: { top: 0, right: 0, bottom: 0, left: 0 } });
+  const pages = pdfPages(pdf);
+  if (pages !== 1 || result.sheets !== 1 || result.labels !== 2 || result.columns !== 1 || result.rows !== 2 || !result.wide || !result.noOverflow || !result.stripedFrame || !result.exactColors || !result.logo || !result.barcode || !result.fontLoaded) {
+    throw new Error(`Postal two-up verification failed: ${JSON.stringify({ pages, result })}`);
+  }
+  await page.emulateMedia({ media: 'screen' });
+  await page.screenshot({ path: screenshotOutput, fullPage: true });
+  console.log(JSON.stringify({ postal: 'two-up', pages, result, pdfOutput, screenshotOutput }));
+  await page.close();
+}
+{
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await page.goto('http://127.0.0.1:8792/tests/browser/fixture.php?count=5&template=postal', { waitUntil: 'networkidle' });
+  await page.emulateMedia({ media: 'print' });
+  const pdf = await page.pdf({ format: 'A4', printBackground: true, margin: { top: 0, right: 0, bottom: 0, left: 0 } });
+  const pages = pdfPages(pdf);
+  const result = await page.evaluate(() => ({ sheets: document.querySelectorAll('.wsl-sheet').length, labels: document.querySelectorAll('.wsl-label--postal').length, counts: [...document.querySelectorAll('.wsl-sheet')].map(sheet => sheet.querySelectorAll('.wsl-label--postal').length) }));
+  if (pages !== 3 || result.sheets !== 3 || result.labels !== 5 || JSON.stringify(result.counts) !== '[2,2,1]') throw new Error(`Postal pagination verification failed: ${JSON.stringify({ pages, result })}`);
+  console.log(JSON.stringify({ postal: 'five-labels', pages, result }));
+  await page.close();
+}
+{
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await page.goto('http://127.0.0.1:8792/tests/browser/fixture.php?count=2&template=postal&disabled=1', { waitUntil: 'networkidle' });
+  const result = await page.evaluate(() => ({ postal: document.querySelectorAll('.wsl-label--postal').length, phone: document.body.textContent.includes('09121234567'), address: document.body.textContent.includes('خیابان آزادی'), logo: !!document.querySelector('.wsl-postal__logo'), barcode: !!document.querySelector('.wsl-postal__barcode') }));
+  if (result.postal !== 2 || result.phone || result.address || result.logo || result.barcode) throw new Error(`Postal disabled-field verification failed: ${JSON.stringify(result)}`);
+  console.log(JSON.stringify({ postal: 'disabled-fields', result }));
+  await page.close();
+}
 for (const template of ['modern', 'classic']) {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   await page.goto(`http://127.0.0.1:8792/tests/browser/fixture.php?document=invoice&template=${template}&items=3&invoices=1`, { waitUntil: 'networkidle' });

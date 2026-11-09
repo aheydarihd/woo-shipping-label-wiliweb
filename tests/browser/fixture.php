@@ -12,7 +12,8 @@ function esc_url($v): string { return (string)$v; }
 function esc_html_e($v, $d=null): void { echo esc_html($v); }
 function language_attributes(): void { echo 'lang="fa-IR"'; }
 function bloginfo($key): void { echo 'UTF-8'; }
-function wp_get_attachment_image_url($id,$size) { return ''; }
+$GLOBALS['wsl_fixture_logo'] = 'data:image/svg+xml,' . rawurlencode('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="140"><rect width="320" height="140" rx="22" fill="#155eef"/><text x="160" y="82" text-anchor="middle" font-family="Arial" font-size="42" font-weight="700" fill="white">WiliWeb</text></svg>');
+function wp_get_attachment_image_url($id,$size) { return (int) $id === 77 ? $GLOBALS['wsl_fixture_logo'] : ''; }
 function apply_filters($hook,$value,...$args) { return $value; }
 
 require dirname(__DIR__, 2) . '/source/woo-shipping-label-wiliweb/includes/class-wsl-layout.php';
@@ -48,12 +49,19 @@ if ($document === 'invoice') {
 }
 $count = in_array((int)($_GET['count'] ?? 4), [1,2,4,5,6,8], true) ? (int)$_GET['count'] : 4;
 $perPage = $count === 5 ? 4 : $count;
-$template = $template === 'simple' ? 'simple' : 'table';
+$template = in_array($template, ['table', 'simple', 'postal'], true) ? $template : 'table';
 $orientation = ($_GET['orientation'] ?? '') === 'landscape' ? 'landscape' : 'portrait';
+if ($template === 'postal') {
+    $perPage = 2;
+    $orientation = 'landscape';
+}
 $fields = array_fill_keys(['recipient_name','recipient_phone','recipient_province','recipient_city','recipient_address','recipient_postcode','sender_name','sender_phone','sender_province','sender_city','sender_address','sender_postcode','order_number','order_date','print_date','order_status','shipping_method','payment_method','items','order_total','customer_note','recipient_email','website','logo','barcode'], true);
-$settings = ['template'=>$template,'layout'=>WSL_Layout::preset($perPage, $orientation),'fields'=>$fields,'accent'=>'#155eef','font_size'=>11,'show_border'=>true];
+if ($template === 'postal' && !empty($_GET['disabled'])) {
+    foreach (['recipient_phone', 'recipient_address', 'logo', 'barcode'] as $disabledField) $fields[$disabledField] = false;
+}
+$settings = ['template'=>$template,'layout'=>WSL_Layout::preset($perPage, $orientation),'fields'=>$fields,'accent'=>'#155eef','font_size'=>$template === 'postal' ? 13 : 11,'show_border'=>true];
 $labels = [];
 for($i=1;$i<=$count;$i++){
-    $labels[]=['order_id'=>$i,'recipient'=>['name'=>"علی رضایی {$i}",'phone'=>'09121234567','province'=>'تهران','city'=>'تهران','address'=>'خیابان آزادی، کوچه نمونه، پلاک ۱۲، واحد ۳','postcode'=>'1234567890'],'sender'=>['name'=>'فروشگاه نمونه','phone'=>'02112345678','province'=>'تهران','city'=>'تهران','address'=>'بازار بزرگ، پلاک ۱','postcode'=>'1111111111','website'=>'example.com','logo_id'=>0],'optional'=>['order_number'=>(string)(1000+$i),'order_date'=>'1405/06/21','print_date'=>'1405/06/21 12:00','order_status'=>'در حال انجام','shipping_method'=>'پست پیشتاز','payment_method'=>'پرداخت آنلاین','items'=>['محصول نمونه × 2'],'order_total'=>'2,500,000 تومان','customer_note'=>'','recipient_email'=>'ali@example.com','website'=>'example.com','logo_id'=>0,'barcode'=>(string)(1000+$i)]];
+    $labels[]=['order_id'=>$i,'recipient'=>['name'=>"علی رضایی {$i}",'phone'=>'09121234567','province'=>'تهران','city'=>'تهران','address'=>'خیابان آزادی، بعد از میدان انقلاب، کوچه نمونه طولانی، ساختمان آفتاب، طبقه سوم، واحد ۱۲','postcode'=>'1234567890'],'sender'=>['name'=>'فروشگاه اینترنتی ویلی وب','phone'=>'02112345678','province'=>'تهران','city'=>'تهران','address'=>'بازار بزرگ، سرای فناوری، راهروی دوم، پلاک ۱','postcode'=>'1111111111','website'=>'wiliweb.com','logo_id'=>77],'optional'=>['order_number'=>(string)(1000+$i),'order_date'=>'1405/06/21','print_date'=>'1405/06/21 12:00','order_status'=>'در حال انجام','shipping_method'=>'پست پیشتاز','payment_method'=>'پرداخت آنلاین','items'=>['محصول نمونه × 2'],'order_total'=>'2,500,000 تومان','customer_note'=>'','recipient_email'=>'ali@example.com','website'=>'wiliweb.com','logo_id'=>77,'barcode'=>(string)(1000+$i)]];
 }
 WSL_Renderer::page($labels,$settings,0);
