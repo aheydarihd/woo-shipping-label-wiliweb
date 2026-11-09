@@ -95,6 +95,31 @@ for (const count of [4, 5]) {
 }
 {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const measure = async size => {
+    await page.goto(`http://127.0.0.1:8792/tests/browser/fixture.php?count=2&template=postal&logo=${size}`, { waitUntil: 'networkidle' });
+    return page.evaluate(async () => {
+      await document.fonts.ready;
+      const logo = document.querySelector('.wsl-postal__logo img')?.getBoundingClientRect();
+      const orderNumber = document.querySelector('.wsl-postal__footer .wsl-field-order_number');
+      const orderStyle = orderNumber ? getComputedStyle(orderNumber) : null;
+      return {
+        logoWidth: logo?.width || 0,
+        printDate: document.body.textContent.includes('تاریخ چاپ'),
+        orderBorderLeft: orderStyle?.borderLeftWidth || '0px',
+        orderBorderRight: orderStyle?.borderRightWidth || '0px',
+      };
+    });
+  };
+  const small = await measure(24);
+  const large = await measure(52);
+  if (large.logoWidth <= small.logoWidth + 40 || !large.printDate || parseFloat(large.orderBorderLeft) <= 0 || parseFloat(large.orderBorderRight) <= 0) {
+    throw new Error(`Postal controls verification failed: ${JSON.stringify({ small, large })}`);
+  }
+  console.log(JSON.stringify({ postal: 'logo-and-footer-controls', small, large }));
+  await page.close();
+}
+{
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   await page.goto('http://127.0.0.1:8792/tests/browser/fixture.php?count=2&template=postal&stress=1&font=16', { waitUntil: 'networkidle' });
   await page.waitForFunction(() => [...document.querySelectorAll('.wsl-label--postal')].every(label => label.dataset.wslFitted === 'true'));
   const result = await page.evaluate(async () => {

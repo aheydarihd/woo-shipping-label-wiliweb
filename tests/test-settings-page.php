@@ -52,7 +52,7 @@ foreach (WSL_Settings::invoice_field_keys() as $key) {
     wsl_assert(str_contains($html, 'name="' . $option . '[invoice][fields][' . $key . ']"'), 'invoice field control: ' . $key);
 }
 wsl_assert(str_contains($html, 'name="' . $option . '[invoice][fields][fee_total]"'), 'fee visibility control');
-foreach (['template', 'accent', 'font_size', 'show_border'] as $key) {
+foreach (['template', 'accent', 'font_size', 'logo_width', 'show_border'] as $key) {
     wsl_assert(str_contains($html, 'name="' . $option . '[' . $key . ']'), 'legacy label option retained: ' . $key);
 }
 foreach (['per_page', 'orientation', 'label_width', 'label_height', 'margin_top', 'margin_right', 'margin_bottom', 'margin_left', 'gap_horizontal', 'gap_vertical'] as $key) {
@@ -64,4 +64,6 @@ foreach (['name', 'phone', 'province', 'city', 'address', 'postcode', 'website',
 foreach (WSL_Settings::field_keys() as $key) {
     wsl_assert(str_contains($html, 'name="' . $option . '[fields][' . $key . ']"'), 'label field control retained: ' . $key);
 }
+wsl_assert(str_contains($html, 'عرض لوگوی لیبل'), 'postal logo size control is explained');
+wsl_assert(str_contains($html, 'نمایش تاریخ چاپ'), 'print date has a clear dedicated switch');
 unset($_GET['tab']);

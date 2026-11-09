@@ -45,6 +45,14 @@ if ($mode === 'old-label') {
         'signature' => $signature,
         '_wsl_nonce' => wp_create_nonce('wsl_render_' . $signature),
     ];
+} elseif ($mode === 'bulk-label') {
+    $url = WSL_Admin::handle_bulk(admin_url('edit.php?post_type=shop_order'), 'wsl_print_labels', [$order->get_id()]);
+    parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+    if (($query['wsl_bulk_print'] ?? '') !== '1' || isset($query['action']) || parse_url($url, PHP_URL_PATH) !== '/wp-admin/admin.php') {
+        fwrite(STDERR, "BULK_REDIRECT_CREATE=FAIL {$url}\n");
+        $order->delete(true);
+        exit(1);
+    }
 } else {
     $document = ($mode === 'invoice' || str_starts_with($mode, 'invoice-')) ? 'invoice' : 'label';
     $url = WSL_Print_Controller::create_url([$order->get_id()], $document);
@@ -97,4 +105,8 @@ register_shutdown_function(static function () use ($order, $mode, $previous_sett
     }
 });
 
-WSL_Print_Controller::render();
+if ($mode === 'bulk-label') {
+    WSL_Print_Controller::maybe_render_bulk();
+} else {
+    WSL_Print_Controller::render();
+}

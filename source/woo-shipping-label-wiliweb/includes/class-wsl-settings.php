@@ -48,6 +48,7 @@ final class WSL_Settings {
             'fields' => $fields,
             'accent' => '#155eef',
             'font_size' => 11,
+            'logo_width' => 42,
             'show_border' => true,
             'invoice' => [
                 'template' => 'modern',
@@ -71,6 +72,7 @@ final class WSL_Settings {
         $color = sanitize_hex_color($input['accent'] ?? '');
         $output['accent'] = $color ?: $defaults['accent'];
         $output['font_size'] = max(8, min(16, absint($input['font_size'] ?? $defaults['font_size'])));
+        $output['logo_width'] = max(15, min(60, absint($input['logo_width'] ?? $defaults['logo_width'])));
         $output['show_border'] = !empty($input['show_border']);
         foreach ($defaults['sender'] as $key => $value) {
             if ($key === 'logo_id') {

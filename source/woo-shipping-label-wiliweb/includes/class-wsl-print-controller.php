@@ -8,6 +8,7 @@ final class WSL_Print_Controller {
     public static function register(): void {
         add_action('admin_post_wsl_prepare_print', [self::class, 'prepare']);
         add_action('admin_post_wsl_render_print', [self::class, 'render']);
+        add_action('admin_init', [self::class, 'maybe_render_bulk']);
     }
 
     public static function parse_ids($raw): array {
@@ -36,6 +37,29 @@ final class WSL_Print_Controller {
             ],
             admin_url('admin-post.php')
         );
+    }
+
+    public static function create_bulk_url(array $ids, string $document = 'label'): string {
+        $ids = self::parse_ids($ids);
+        if (!$ids || !in_array($document, ['label', 'invoice'], true)) {
+            return '';
+        }
+        $request = self::create_request($ids, null, $document);
+        return add_query_arg(
+            [
+                'wsl_bulk_print' => '1',
+                'payload'        => $request['payload'],
+                'signature'      => $request['signature'],
+                '_wsl_nonce'     => wp_create_nonce('wsl_render_' . $request['signature']),
+            ],
+            admin_url('admin.php')
+        );
+    }
+
+    public static function maybe_render_bulk(): void {
+        if (isset($_GET['wsl_bulk_print']) && (string) wp_unslash($_GET['wsl_bulk_print']) === '1') {
+            self::render();
+        }
     }
 
     public static function create_request(array $ids, ?int $expires = null, string $document = 'label'): array {

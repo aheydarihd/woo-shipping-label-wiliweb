@@ -27,6 +27,7 @@
             --wsl-label-height:<?php echo esc_attr($layout['label_height']); ?>mm;
             --wsl-accent:<?php echo esc_attr($settings['accent']); ?>;
             --wsl-font-size:<?php echo (int) $settings['font_size']; ?>px;
+            --wsl-logo-width:<?php echo (int) ($settings['logo_width'] ?? 42); ?>mm;
             --wsl-border:<?php echo !empty($settings['show_border']) ? '1px solid #273244' : '0'; ?>;
         }
     </style>

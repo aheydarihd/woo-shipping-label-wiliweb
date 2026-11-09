@@ -14,6 +14,10 @@ if (!class_exists('WSL_Print_Controller')) {
             $GLOBALS['wsl_admin_print_calls'][] = ['ids' => $ids, 'document' => $document];
             return 'https://example.test/print?document=' . $document;
         }
+        public static function create_bulk_url(array $ids, string $document = 'label'): string {
+            $GLOBALS['wsl_admin_bulk_print_calls'][] = ['ids' => $ids, 'document' => $document];
+            return 'https://example.test/wp-admin/admin.php?wsl_bulk_print=1&document=' . $document;
+        }
     }
 }
 
@@ -79,5 +83,6 @@ wsl_assert(!str_contains($invoice_only, 'چاپ لیبل'), 'disabled label hidd
 wsl_assert(str_contains($invoice_only, 'چاپ فاکتور'), 'invoice remains when label disabled');
 $invoice_redirect = WSL_Admin::handle_bulk('https://example.test/orders', 'wsl_print_invoices', [42, 43]);
 wsl_assert_same('invoice', $document_from_url($invoice_redirect), 'bulk invoice document forwarded');
+wsl_assert(str_contains($invoice_redirect, 'wsl_bulk_print=1'), 'bulk redirect uses action-safe endpoint marker');
 wsl_assert_same('https://example.test/orders', WSL_Admin::handle_bulk('https://example.test/orders', 'unsupported', [42]), 'unsupported bulk action ignored');
 unset($GLOBALS['wsl_test_options'][WSL_Settings::OPTION]);

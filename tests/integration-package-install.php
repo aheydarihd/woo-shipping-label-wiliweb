@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 $root = 'E:/Codex/Wiliweb/woo-crm-v2/tmp/runtime/wordpress/';
-$package = dirname(__DIR__) . '/dist/woo-shipping-label-wiliweb-1.1.1-beta.1.zip';
+$package = dirname(__DIR__) . '/dist/woo-shipping-label-wiliweb-1.1.1-beta.2.zip';
 
 require $root . 'wp-load.php';
 require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -31,7 +31,7 @@ if ($result !== true || !is_file(WP_PLUGIN_DIR . '/' . $plugin)) {
 }
 
 $data = get_plugin_data(WP_PLUGIN_DIR . '/' . $plugin, false, false);
-if (($data['Version'] ?? '') !== '1.1.1-beta.1') {
+if (($data['Version'] ?? '') !== '1.1.1-beta.2') {
     fwrite(STDERR, 'PACKAGE_INSTALL=FAIL unexpected version ' . ($data['Version'] ?? '') . "\n");
     exit(1);
 }
@@ -40,4 +40,4 @@ if ($wasActive && !is_plugin_active($plugin)) {
     exit(1);
 }
 
-echo "PACKAGE_INSTALL=PASS overwrite=1 active=" . ($wasActive ? '1' : '0') . " version=1.1.1-beta.1\n";
+echo "PACKAGE_INSTALL=PASS overwrite=1 active=" . ($wasActive ? '1' : '0') . " version=1.1.1-beta.2\n";

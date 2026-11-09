@@ -6,6 +6,7 @@ require_once dirname(__DIR__) . '/source/woo-shipping-label-wiliweb/includes/cla
 $defaults = WSL_Settings::defaults();
 wsl_assert_same(4, $defaults['layout']['per_page'], 'default four labels');
 wsl_assert_same('portrait', $defaults['layout']['orientation'], 'default portrait orientation');
+wsl_assert_same(42, $defaults['logo_width'], 'default postal logo width');
 wsl_assert($defaults['fields']['recipient_name'], 'recipient name enabled');
 wsl_assert($defaults['fields']['sender_address'], 'sender address enabled');
 $clean = WSL_Settings::sanitize([
@@ -13,6 +14,7 @@ $clean = WSL_Settings::sanitize([
     'layout' => ['per_page' => 8],
     'accent' => 'javascript:bad',
     'font_size' => 99,
+    'logo_width' => 99,
     'sender' => ['name' => '<b>فروشگاه</b>'],
     'fields' => ['order_number' => '1'],
 ]);
@@ -20,6 +22,7 @@ wsl_assert_same('table', $clean['template'], 'template whitelist');
 wsl_assert_same(8, $clean['layout']['per_page'], 'layout selection');
 wsl_assert_same('#155eef', $clean['accent'], 'safe color fallback');
 wsl_assert_same(16, $clean['font_size'], 'font clamp');
+wsl_assert_same(60, $clean['logo_width'], 'logo width clamp');
 wsl_assert_same('فروشگاه', $clean['sender']['name'], 'sender sanitized');
 wsl_assert($clean['fields']['order_number'], 'selected optional enabled');
 wsl_assert(!$clean['fields']['payment_method'], 'missing optional disabled');
@@ -32,6 +35,7 @@ $horizontal = WSL_Settings::sanitize(['layout' => ['per_page' => 4, 'orientation
 wsl_assert_same('landscape', $horizontal['layout']['orientation'], 'horizontal labels saved');
 $postal = WSL_Settings::sanitize(['template' => 'postal']);
 wsl_assert_same('postal', $postal['template'], 'postal label template allowed');
+wsl_assert_same(15, WSL_Settings::sanitize(['logo_width' => 1])['logo_width'], 'minimum logo width clamp');
 wsl_assert_same('table', $defaults['template'], 'postal template does not change default');
 
 $invoice_keys = WSL_Settings::invoice_field_keys();

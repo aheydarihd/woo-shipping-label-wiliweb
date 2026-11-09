@@ -4,7 +4,7 @@ Tags: woocommerce, invoice, shipping, label, print, hpos
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.1.1-beta.1
+Stable tag: 1.1.1-beta.2
 License: GPLv2 or later
 
 صدور و چاپ مدیریتی فاکتور فروش و لیبل پستی سفارش‌های ووکامرس با قالب فارسی و پشتیبانی HPOS.

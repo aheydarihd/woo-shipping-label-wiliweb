@@ -4,6 +4,7 @@ if (!defined('MINUTE_IN_SECONDS')) define('MINUTE_IN_SECONDS', 60);
 if (!function_exists('wp_generate_password')) { function wp_generate_password($length, $special=false, $extra=false) { return 'FixedTokenABC123'; } }
 if (!function_exists('get_current_user_id')) { function get_current_user_id() { return (int) ($GLOBALS['wsl_test_user_id'] ?? 7); } }
 if (!function_exists('admin_url')) { function admin_url($path='') { return 'https://example.test/wp-admin/' . $path; } }
+if (!function_exists('add_action')) { function add_action($hook, $callback, $priority = 10, $args = 1) { $GLOBALS['wsl_print_actions'][] = $hook; $GLOBALS['wsl_actions'][] = $hook; } }
 if (!function_exists('wp_create_nonce')) { function wp_create_nonce($action) { return 'nonce-' . $action; } }
 if (!function_exists('wp_salt')) { function wp_salt($scheme='auth') { return 'unit-test-secret-' . $scheme; } }
 if (!function_exists('add_query_arg')) {
@@ -18,6 +19,9 @@ if (!function_exists('add_query_arg')) {
 }
 require_once dirname(__DIR__) . '/source/woo-shipping-label-wiliweb/includes/class-wsl-print-controller.php';
 
+WSL_Print_Controller::register();
+wsl_assert(in_array('admin_init', $GLOBALS['wsl_print_actions'] ?? [], true), 'bulk print fallback runs before admin output');
+
 wsl_assert_same([12, 13, 14], WSL_Print_Controller::parse_ids('12,13,bad,14,13'), 'valid unique IDs');
 wsl_assert_same([7, 8], WSL_Print_Controller::parse_ids(['7', '0', '8']), 'array IDs');
 wsl_assert_same([], WSL_Print_Controller::parse_ids('bad'), 'invalid IDs empty');
@@ -28,6 +32,12 @@ wsl_assert(!empty($query['payload']), 'signed request contains payload');
 wsl_assert((bool) preg_match('/^[a-f0-9]{64}$/', $query['signature'] ?? ''), 'signed request contains HMAC signature');
 wsl_assert_same('nonce-wsl_render_' . ($query['signature'] ?? ''), $query['_wsl_nonce'] ?? '', 'nonce uses signature');
 wsl_assert_same([12, 13], WSL_Print_Controller::verify_request($query['payload'] ?? '', $query['signature'] ?? ''), 'signed request restores IDs without transient storage');
+$bulkUrl = WSL_Print_Controller::create_bulk_url([12, 13]);
+parse_str((string) parse_url($bulkUrl, PHP_URL_QUERY), $bulkQuery);
+wsl_assert_same('/wp-admin/admin.php', parse_url($bulkUrl, PHP_URL_PATH), 'bulk URL avoids admin-post action stripping');
+wsl_assert_same('1', $bulkQuery['wsl_bulk_print'] ?? '', 'bulk URL carries stable endpoint marker');
+wsl_assert(!isset($bulkQuery['action']), 'bulk URL does not depend on reserved action parameter');
+wsl_assert_same([12, 13], WSL_Print_Controller::verify_request($bulkQuery['payload'] ?? '', $bulkQuery['signature'] ?? ''), 'bulk URL preserves signed order IDs');
 $tampered = substr((string) ($query['payload'] ?? ''), 0, -1) . 'x';
 wsl_assert_same([], WSL_Print_Controller::verify_request($tampered, $query['signature'] ?? ''), 'tampered payload rejected');
 $expired = WSL_Print_Controller::create_request([12], time() - 1);

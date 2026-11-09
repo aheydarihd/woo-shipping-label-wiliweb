@@ -3,7 +3,7 @@
  * Plugin Name: فاکتور ساز ویلی وب
  * Plugin URI: https://wiliweb.com
  * Description: صدور و چاپ مدیریتی فاکتور فروش و لیبل پستی سفارش‌های ووکامرس با قالب فارسی و تنظیمات مستقل.
- * Version: 1.1.1-beta.1
+ * Version: 1.1.1-beta.2
  * Author: WiliWeb
  * Author URI: https://wiliweb.com
  * Update URI: https://github.com/aheydarihd/woo-shipping-label-wiliweb
@@ -16,7 +16,7 @@
 
 defined('ABSPATH') || exit;
 
-define('WSL_VERSION', '1.1.1-beta.1');
+define('WSL_VERSION', '1.1.1-beta.2');
 define('WSL_FILE', __FILE__);
 define('WSL_PATH', plugin_dir_path(__FILE__));
 define('WSL_URL', plugin_dir_url(__FILE__));

@@ -65,7 +65,7 @@ final class WSL_Admin {
         if (!WSL_Settings::module_enabled(WSL_Settings::get(), $document['module'])) {
             return add_query_arg('wsl_error', 'disabled', $redirect);
         }
-        $url = WSL_Print_Controller::create_url($ids, $document['document']);
+        $url = WSL_Print_Controller::create_bulk_url($ids, $document['document']);
         return $url !== '' ? $url : add_query_arg('wsl_error', 'empty', $redirect);
     }
 }

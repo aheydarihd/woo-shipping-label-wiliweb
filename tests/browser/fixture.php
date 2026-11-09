@@ -60,7 +60,8 @@ if ($template === 'postal' && !empty($_GET['disabled'])) {
     foreach (['recipient_phone', 'recipient_address', 'logo', 'barcode'] as $disabledField) $fields[$disabledField] = false;
 }
 $postalFont = max(8, min(20, (int) ($_GET['font'] ?? 13)));
-$settings = ['template'=>$template,'layout'=>WSL_Layout::preset($perPage, $orientation),'fields'=>$fields,'accent'=>'#155eef','font_size'=>$template === 'postal' ? $postalFont : 11,'show_border'=>true];
+$logoWidth = max(15, min(60, (int) ($_GET['logo'] ?? 42)));
+$settings = ['template'=>$template,'layout'=>WSL_Layout::preset($perPage, $orientation),'fields'=>$fields,'accent'=>'#155eef','font_size'=>$template === 'postal' ? $postalFont : 11,'logo_width'=>$logoWidth,'show_border'=>true];
 $stress = $template === 'postal' && !empty($_GET['stress']);
 $recipientAddress = $stress
     ? str_repeat('خیابان آزادی، کوچه نمونه طولانی، ساختمان آفتاب، طبقه سوم، واحد ۱۲؛ ', 5)
