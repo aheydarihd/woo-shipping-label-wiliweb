@@ -145,4 +145,3 @@ Assert one `woo-shipping-label-wiliweb/` root, no tests/docs/tmp/dist entries, p
 - [ ] **Step 6: Hand off local testing artifacts**
 
 Report the ZIP path, SHA256, screenshot/PDF paths, and exact WordPress upload steps. Explicitly confirm no push, tag, or GitHub release occurred.
-
