@@ -28,8 +28,18 @@ $postal_data['recipient'] = ['name'=>'<script>alert(1)</script> علی رضای�
 $postal_data['sender'] = ['name'=>'فروشگاه ویلی وب','phone'=>'02112345678','province'=>'تهران','city'=>'تهران','address'=>'بازار بزرگ، پلاک ۱','postcode'=>'1111111111','website'=>'wiliweb.com','logo_id'=>77];
 $postal_data['optional']['logo_id'] = 77;
 $postal_data['optional']['print_date'] = '1405/08/18 12:30';
+$postal_data['optional']['order_date'] = '1405/08/17';
+$postal_data['optional']['order_status'] = 'آماده ارسال';
+$postal_data['optional']['payment_method'] = 'پرداخت آنلاین';
+$postal_data['optional']['items'] = ['دفتر برنامه‌ریزی × 2'];
+$postal_data['optional']['order_total'] = '850,000 تومان';
+$postal_data['optional']['customer_note'] = 'قبل از ارسال تماس بگیرید';
+$postal_data['optional']['recipient_email'] = 'ali@example.test';
 $postal_settings = WSL_Settings::defaults();
 $postal_settings['template'] = 'postal';
+foreach (['order_date', 'order_status', 'payment_method', 'items', 'order_total', 'customer_note', 'recipient_email'] as $field) {
+    $postal_settings['fields'][$field] = true;
+}
 $postal = WSL_Renderer::label($postal_data, $postal_settings);
 wsl_assert(str_contains($postal, 'wsl-label--postal'), 'postal template root');
 foreach (['wsl-postal__inner', 'wsl-postal__recipient', 'wsl-postal__sender', 'wsl-postal__footer', 'wsl-postal__logo', 'wsl-postal__barcode'] as $class) {
@@ -37,11 +47,14 @@ foreach (['wsl-postal__inner', 'wsl-postal__recipient', 'wsl-postal__sender', 'w
 }
 wsl_assert(str_contains($postal, 'https://example.test/postal-logo.png'), 'postal logo uses sender logo');
 wsl_assert(str_contains($postal, 'wsl-barcode'), 'postal barcode rendered');
+foreach (['1405/08/17', 'آماده ارسال', 'پرداخت آنلاین', 'دفتر برنامه‌ریزی × 2', '850,000 تومان', 'قبل از ارسال تماس بگیرید', 'ali@example.test'] as $optionalValue) {
+    wsl_assert(str_contains($postal, $optionalValue), 'enabled postal optional field: ' . $optionalValue);
+}
 wsl_assert(str_contains($postal, '&lt;script&gt;alert(1)&lt;/script&gt; علی رضایی'), 'postal recipient escaped');
 wsl_assert(!str_contains($postal, '<script>alert(1)</script>'), 'unsafe postal HTML absent');
 
 $postal_hidden = $postal_settings;
-foreach (['recipient_phone', 'recipient_address', 'sender_phone', 'sender_address', 'logo', 'barcode'] as $field) {
+foreach (['recipient_phone', 'recipient_address', 'sender_phone', 'sender_address', 'logo', 'barcode', 'order_date', 'order_status', 'payment_method', 'items', 'order_total', 'customer_note', 'recipient_email'] as $field) {
     $postal_hidden['fields'][$field] = false;
 }
 $postal_hidden_html = WSL_Renderer::label($postal_data, $postal_hidden);
@@ -51,6 +64,9 @@ wsl_assert(!str_contains($postal_hidden_html, '02112345678'), 'disabled sender p
 wsl_assert(!str_contains($postal_hidden_html, 'بازار بزرگ'), 'disabled sender address hidden from postal');
 wsl_assert(!str_contains($postal_hidden_html, 'postal-logo.png'), 'disabled postal logo hidden');
 wsl_assert(!str_contains($postal_hidden_html, 'wsl-barcode'), 'disabled postal barcode hidden');
+foreach (['1405/08/17', 'آماده ارسال', 'پرداخت آنلاین', 'دفتر برنامه‌ریزی × 2', '850,000 تومان', 'قبل از ارسال تماس بگیرید', 'ali@example.test'] as $optionalValue) {
+    wsl_assert(!str_contains($postal_hidden_html, $optionalValue), 'disabled postal optional field hidden: ' . $optionalValue);
+}
 wsl_assert(str_contains($postal_hidden_html, 'فروشگاه ویلی وب'), 'postal remains readable with disabled fields');
 
 $postal_without_logo = $postal_data;

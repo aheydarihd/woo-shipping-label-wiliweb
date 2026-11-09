@@ -59,9 +59,17 @@ $fields = array_fill_keys(['recipient_name','recipient_phone','recipient_provinc
 if ($template === 'postal' && !empty($_GET['disabled'])) {
     foreach (['recipient_phone', 'recipient_address', 'logo', 'barcode'] as $disabledField) $fields[$disabledField] = false;
 }
-$settings = ['template'=>$template,'layout'=>WSL_Layout::preset($perPage, $orientation),'fields'=>$fields,'accent'=>'#155eef','font_size'=>$template === 'postal' ? 13 : 11,'show_border'=>true];
+$postalFont = max(8, min(20, (int) ($_GET['font'] ?? 13)));
+$settings = ['template'=>$template,'layout'=>WSL_Layout::preset($perPage, $orientation),'fields'=>$fields,'accent'=>'#155eef','font_size'=>$template === 'postal' ? $postalFont : 11,'show_border'=>true];
+$stress = $template === 'postal' && !empty($_GET['stress']);
+$recipientAddress = $stress
+    ? str_repeat('خیابان آزادی، کوچه نمونه طولانی، ساختمان آفتاب، طبقه سوم، واحد ۱۲؛ ', 5)
+    : 'خیابان آزادی، بعد از میدان انقلاب، کوچه نمونه طولانی، ساختمان آفتاب، طبقه سوم، واحد ۱۲';
+$senderAddress = $stress
+    ? str_repeat('بازار بزرگ، سرای فناوری، راهروی دوم، پلاک ۱؛ ', 4)
+    : 'بازار بزرگ، سرای فناوری، راهروی دوم، پلاک ۱';
 $labels = [];
 for($i=1;$i<=$count;$i++){
-    $labels[]=['order_id'=>$i,'recipient'=>['name'=>"علی رضایی {$i}",'phone'=>'09121234567','province'=>'تهران','city'=>'تهران','address'=>'خیابان آزادی، بعد از میدان انقلاب، کوچه نمونه طولانی، ساختمان آفتاب، طبقه سوم، واحد ۱۲','postcode'=>'1234567890'],'sender'=>['name'=>'فروشگاه اینترنتی ویلی وب','phone'=>'02112345678','province'=>'تهران','city'=>'تهران','address'=>'بازار بزرگ، سرای فناوری، راهروی دوم، پلاک ۱','postcode'=>'1111111111','website'=>'wiliweb.com','logo_id'=>77],'optional'=>['order_number'=>(string)(1000+$i),'order_date'=>'1405/06/21','print_date'=>'1405/06/21 12:00','order_status'=>'در حال انجام','shipping_method'=>'پست پیشتاز','payment_method'=>'پرداخت آنلاین','items'=>['محصول نمونه × 2'],'order_total'=>'2,500,000 تومان','customer_note'=>'','recipient_email'=>'ali@example.com','website'=>'wiliweb.com','logo_id'=>77,'barcode'=>(string)(1000+$i)]];
+    $labels[]=['order_id'=>$i,'recipient'=>['name'=>"علی رضایی {$i}",'phone'=>'09121234567','province'=>'تهران','city'=>'تهران','address'=>$recipientAddress,'postcode'=>'1234567890'],'sender'=>['name'=>'فروشگاه اینترنتی ویلی وب','phone'=>'02112345678','province'=>'تهران','city'=>'تهران','address'=>$senderAddress,'postcode'=>'1111111111','website'=>'wiliweb.com','logo_id'=>77],'optional'=>['order_number'=>(string)(1000+$i),'order_date'=>'1405/06/21','print_date'=>'1405/06/21 12:00','order_status'=>'در حال انجام','shipping_method'=>'پست پیشتاز','payment_method'=>'پرداخت آنلاین','items'=>[$stress ? str_repeat('محصول نمونه × 2، ', 6) : 'محصول نمونه × 2'],'order_total'=>'2,500,000 تومان','customer_note'=>$stress ? 'قبل از ارسال حتماً با گیرنده تماس گرفته شود.' : '','recipient_email'=>'ali@example.com','website'=>'wiliweb.com','logo_id'=>77,'barcode'=>(string)(1000+$i)]];
 }
 WSL_Renderer::page($labels,$settings,0);

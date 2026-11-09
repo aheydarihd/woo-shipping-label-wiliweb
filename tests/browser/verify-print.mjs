@@ -95,6 +95,35 @@ for (const count of [4, 5]) {
 }
 {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await page.goto('http://127.0.0.1:8792/tests/browser/fixture.php?count=2&template=postal&stress=1&font=16', { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => [...document.querySelectorAll('.wsl-label--postal')].every(label => label.dataset.wslFitted === 'true'));
+  const result = await page.evaluate(async () => {
+    await document.fonts.ready;
+    const sections = [...document.querySelectorAll('.wsl-postal__recipient, .wsl-postal__sender, .wsl-postal__footer')];
+    const fits = section => {
+      const bounds = section.getBoundingClientRect();
+      const childrenInside = [...section.querySelectorAll('*')].every(child => {
+        const childBounds = child.getBoundingClientRect();
+        return childBounds.right <= bounds.right + 1 && childBounds.bottom <= bounds.bottom + 1;
+      });
+      return section.scrollHeight <= section.clientHeight + 1 && section.scrollWidth <= section.clientWidth + 1 && childrenInside;
+    };
+    return {
+      labels: document.querySelectorAll('.wsl-label--postal').length,
+      fitted: [...document.querySelectorAll('.wsl-label--postal')].every(label => label.dataset.wslFitted === 'true'),
+      overflowWarning: !!document.querySelector('.wsl-postal--overflow'),
+      sectionsFit: sections.every(fits),
+      fontSizes: [...document.querySelectorAll('.wsl-label--postal')].map(label => parseFloat(getComputedStyle(label).fontSize)),
+    };
+  });
+  if (result.labels !== 2 || !result.fitted || result.overflowWarning || !result.sectionsFit || result.fontSizes.some(size => size < 8)) {
+    throw new Error(`Postal content-fit verification failed: ${JSON.stringify(result)}`);
+  }
+  console.log(JSON.stringify({ postal: 'content-fit', result }));
+  await page.close();
+}
+{
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   await page.goto('http://127.0.0.1:8792/tests/browser/fixture.php?count=2&template=postal&disabled=1', { waitUntil: 'networkidle' });
   const result = await page.evaluate(() => ({ postal: document.querySelectorAll('.wsl-label--postal').length, phone: document.body.textContent.includes('09121234567'), address: document.body.textContent.includes('خیابان آزادی'), logo: !!document.querySelector('.wsl-postal__logo'), barcode: !!document.querySelector('.wsl-postal__barcode') }));
   if (result.postal !== 2 || result.phone || result.address || result.logo || result.barcode) throw new Error(`Postal disabled-field verification failed: ${JSON.stringify(result)}`);

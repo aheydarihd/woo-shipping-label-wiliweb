@@ -40,6 +40,10 @@ html, body { margin: 0; background: #eef1f6; color: #111827; }
 .wsl-label--postal .wsl-field-recipient_name { font-size: 1.4em; color: #101828; }
 .wsl-label--postal .wsl-field-recipient_address { font-size: 1.18em; line-height: 1.85; }
 .wsl-label--postal .wsl-field-recipient_phone, .wsl-label--postal .wsl-field-recipient_postcode { font-size: 1.12em; }
+.wsl-postal__details { margin-top: 1.2mm; padding: 1.5mm 2mm; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 3mm; border-radius: 1.5mm; background: color-mix(in srgb, var(--wsl-accent) 7%, white); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.wsl-postal__details:empty { display: none; }
+.wsl-postal__details .wsl-row { margin-bottom: .5mm; font-size: .88em; }
+.wsl-postal__details .wsl-field-items, .wsl-postal__details .wsl-field-customer_note { grid-column: 1 / -1; }
 .wsl-postal__logo { min-height: 21mm; margin-bottom: 2.5mm; display: flex; align-items: center; justify-content: center; }
 .wsl-postal__logo img { width: min(42mm, 90%); height: 21mm; object-fit: contain; }
 .wsl-postal__barcode { margin-top: auto; padding-top: 2mm; text-align: center; }
@@ -48,6 +52,23 @@ html, body { margin: 0; background: #eef1f6; color: #111827; }
 .wsl-postal__footer .wsl-row { min-width: 0; margin: 0; padding: 2.5mm 3mm; display: flex; flex-direction: column; justify-content: center; gap: .5mm; text-align: center; }
 .wsl-postal__footer .wsl-row + .wsl-row { border-right: .3mm solid #7d8795; }
 .wsl-postal__footer .wsl-row strong { color: var(--wsl-accent); }
+.wsl-label--postal.wsl-postal--compact .wsl-postal__recipient, .wsl-label--postal.wsl-postal--compact .wsl-postal__sender { padding: 2.8mm; }
+.wsl-label--postal.wsl-postal--compact .wsl-postal__section-title { margin-bottom: 1.4mm; padding-bottom: .8mm; }
+.wsl-label--postal.wsl-postal--compact .wsl-row { margin-bottom: .7mm; }
+.wsl-label--postal.wsl-postal--compact .wsl-postal__logo { min-height: 15mm; height: 15mm; margin-bottom: 1.3mm; }
+.wsl-label--postal.wsl-postal--compact .wsl-postal__logo img { height: 15mm; }
+.wsl-label--postal.wsl-postal--compact .wsl-postal__details { margin-top: .7mm; padding: 1mm 1.5mm; }
+.wsl-label--postal.wsl-postal--compact .wsl-postal__barcode { padding-top: 1mm; }
+.wsl-label--postal.wsl-postal--compact .wsl-postal__barcode .wsl-barcode { height: 11mm; }
+.wsl-label--postal.wsl-postal--compact .wsl-postal__footer { min-height: 13mm; }
+.wsl-label--postal.wsl-postal--compact .wsl-postal__footer .wsl-row { padding: 1.5mm 2mm; }
+.wsl-label--postal.wsl-postal--ultra-compact .wsl-postal__recipient, .wsl-label--postal.wsl-postal--ultra-compact .wsl-postal__sender { padding: 1.8mm; }
+.wsl-label--postal.wsl-postal--ultra-compact .wsl-postal__logo { min-height: 11mm; height: 11mm; margin-bottom: .8mm; }
+.wsl-label--postal.wsl-postal--ultra-compact .wsl-postal__logo img { height: 11mm; }
+.wsl-label--postal.wsl-postal--ultra-compact .wsl-postal__details { margin-top: .4mm; padding: .6mm 1mm; }
+.wsl-label--postal.wsl-postal--ultra-compact .wsl-postal__footer { min-height: 10mm; }
+.wsl-label--postal.wsl-postal--overflow { position: relative; outline: .8mm solid #b42318; outline-offset: -1.2mm; }
+.wsl-label--postal.wsl-postal--overflow::after { content: "محتوای لیبل بیش از ظرفیت چاپ است"; position: absolute; z-index: 3; inset: auto 3mm 3mm 3mm; padding: 1mm 2mm; border-radius: 1mm; background: #b42318; color: #fff; font-size: 9px; font-weight: 900; text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 @media (max-width: 850px) {
     .wsl-document { overflow: auto; padding: 8px; }
     .wsl-toolbar { align-items: stretch; flex-direction: column; }

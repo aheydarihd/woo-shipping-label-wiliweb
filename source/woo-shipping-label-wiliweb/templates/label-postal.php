@@ -11,6 +11,15 @@
                     <?php echo WSL_Renderer::row($settings, 'recipient_address', 'نشانی', $label['recipient']['address'] ?? ''); ?>
                     <?php echo WSL_Renderer::row($settings, 'recipient_postcode', 'کدپستی', $label['recipient']['postcode'] ?? ''); ?>
                     <?php echo WSL_Renderer::row($settings, 'recipient_phone', 'تلفن', $label['recipient']['phone'] ?? ''); ?>
+                    <?php echo WSL_Renderer::row($settings, 'recipient_email', 'ایمیل', $label['optional']['recipient_email'] ?? ''); ?>
+                </div>
+                <div class="wsl-postal__details">
+                    <?php echo WSL_Renderer::row($settings, 'order_date', 'تاریخ سفارش', $label['optional']['order_date'] ?? ''); ?>
+                    <?php echo WSL_Renderer::row($settings, 'order_status', 'وضعیت', $label['optional']['order_status'] ?? ''); ?>
+                    <?php echo WSL_Renderer::row($settings, 'payment_method', 'پرداخت', $label['optional']['payment_method'] ?? ''); ?>
+                    <?php echo WSL_Renderer::row($settings, 'order_total', 'مبلغ', $label['optional']['order_total'] ?? ''); ?>
+                    <?php echo WSL_Renderer::row($settings, 'items', 'اقلام', $label['optional']['items'] ?? []); ?>
+                    <?php echo WSL_Renderer::row($settings, 'customer_note', 'یادداشت', $label['optional']['customer_note'] ?? ''); ?>
                 </div>
                 <?php if (WSL_Renderer::enabled($settings, 'barcode') && ($label['optional']['barcode'] ?? '') !== '') : ?>
                     <div class="wsl-postal__barcode"><?php echo WSL_Renderer::barcode((string) $label['optional']['barcode']); ?></div>
