@@ -88,6 +88,16 @@
     }
 
     document.addEventListener('change', function (event) {
+        if (event.target.matches('[data-wsl-label-template]') && event.target.value === 'postal') {
+            var postalLayout = document.querySelector('[data-wsl-layout]');
+            var postalLandscape = document.querySelector('[data-wsl-orientation][value="landscape"]');
+            var postalPortrait = document.querySelector('[data-wsl-orientation][value="portrait"]');
+            if (postalLayout) postalLayout.value = '2';
+            if (postalLandscape) postalLandscape.checked = true;
+            if (postalPortrait) postalPortrait.checked = false;
+            applyPreset(2);
+            drawLabels();
+        }
         if (event.target.matches('[data-wsl-layout], [data-wsl-orientation]')) {
             var layout = document.querySelector('[data-wsl-layout]');
             applyPreset(layout ? (parseInt(layout.value, 10) || 4) : 4);

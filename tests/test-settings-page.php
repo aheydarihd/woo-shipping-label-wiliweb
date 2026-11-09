@@ -42,6 +42,10 @@ $option = WSL_Settings::OPTION;
 wsl_assert(str_contains($html, 'data-wsl-panel="invoice"'), 'invoice panel rendered');
 wsl_assert(str_contains($html, 'value="modern"'), 'modern invoice template');
 wsl_assert(str_contains($html, 'value="classic"'), 'classic invoice template');
+wsl_assert(str_contains($html, 'value="table"'), 'table label template retained');
+wsl_assert(str_contains($html, 'value="simple"'), 'simple label template retained');
+wsl_assert(str_contains($html, 'value="postal"'), 'postal label template control');
+wsl_assert(str_contains($html, 'data-wsl-label-template'), 'label template controls expose JS hook');
 wsl_assert(str_contains($html, 'name="' . $option . '[modules][labels_enabled]"'), 'labels module switch');
 wsl_assert(str_contains($html, 'name="' . $option . '[modules][invoice_enabled]"'), 'invoice module switch');
 foreach (WSL_Settings::invoice_field_keys() as $key) {

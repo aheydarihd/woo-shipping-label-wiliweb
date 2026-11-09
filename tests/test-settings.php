@@ -30,6 +30,9 @@ wsl_assert_same(8.0, $custom['layout']['margin_top'], 'custom margin accepted');
 wsl_assert_same(96.5, $custom['layout']['label_width'], 'custom width accepted');
 $horizontal = WSL_Settings::sanitize(['layout' => ['per_page' => 4, 'orientation' => 'landscape']]);
 wsl_assert_same('landscape', $horizontal['layout']['orientation'], 'horizontal labels saved');
+$postal = WSL_Settings::sanitize(['template' => 'postal']);
+wsl_assert_same('postal', $postal['template'], 'postal label template allowed');
+wsl_assert_same('table', $defaults['template'], 'postal template does not change default');
 
 $invoice_keys = WSL_Settings::invoice_field_keys();
 wsl_assert(in_array('fee_total', $invoice_keys, true), 'invoice fee visibility setting exists');

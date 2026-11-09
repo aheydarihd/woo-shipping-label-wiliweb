@@ -65,7 +65,7 @@ final class WSL_Settings {
         $output = $defaults;
         $output['modules']['labels_enabled'] = !empty($input['modules']['labels_enabled']);
         $output['modules']['invoice_enabled'] = !empty($input['modules']['invoice_enabled']);
-        $output['template'] = in_array(($input['template'] ?? ''), ['table', 'simple'], true) ? $input['template'] : 'table';
+        $output['template'] = in_array(($input['template'] ?? ''), ['table', 'simple', 'postal'], true) ? $input['template'] : 'table';
         $layout = WSL_Layout::validate(is_array($input['layout'] ?? null) ? $input['layout'] : []);
         $output['layout'] = $layout instanceof WP_Error ? $defaults['layout'] : $layout;
         $color = sanitize_hex_color($input['accent'] ?? '');
