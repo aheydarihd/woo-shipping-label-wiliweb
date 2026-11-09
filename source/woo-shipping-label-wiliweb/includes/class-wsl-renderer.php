@@ -3,7 +3,8 @@ defined('ABSPATH') || defined('WSL_TESTING') || exit;
 
 final class WSL_Renderer {
     public static function label(array $label, array $settings): string {
-        $template = ($settings['template'] ?? 'table') === 'simple' ? 'simple' : 'table';
+        $template = (string) ($settings['template'] ?? 'table');
+        $template = in_array($template, ['table', 'simple', 'postal'], true) ? $template : 'table';
         $path = dirname(__DIR__) . '/templates/label-' . $template . '.php';
         ob_start();
         include $path;

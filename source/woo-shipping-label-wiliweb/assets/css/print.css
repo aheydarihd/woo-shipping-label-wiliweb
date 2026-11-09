@@ -26,6 +26,28 @@ html, body { margin: 0; background: #eef1f6; color: #111827; }
 .wsl-label--simple .wsl-simple__sender { padding-top: 2mm; border-top: 1px dashed #7d8795; }
 .wsl-simple__order { float: left; }
 .wsl-label--simple h2 { border-bottom: 2px solid var(--wsl-accent); padding-bottom: 1mm; }
+.wsl-label--postal { padding: 2.4mm; border: 0; background: repeating-linear-gradient(135deg, #0b66a5 0 6mm, #fff 6mm 8mm, #c83d36 8mm 14mm, #fff 14mm 16mm); font-size: max(var(--wsl-font-size), 11px); line-height: 1.65; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.wsl-postal__inner { height: 100%; min-width: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; overflow: hidden; border: .45mm solid #263746; background: #fff; }
+.wsl-postal__body { min-height: 0; display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, .95fr); }
+.wsl-postal__recipient, .wsl-postal__sender { min-width: 0; padding: 4mm; overflow: hidden; }
+.wsl-postal__recipient { display: flex; flex-direction: column; border-left: .35mm solid #263746; }
+.wsl-postal__sender { display: flex; flex-direction: column; }
+.wsl-postal__section-title { display: flex; align-items: baseline; justify-content: space-between; gap: 2mm; margin-bottom: 2.5mm; padding-bottom: 1.4mm; border-bottom: .8mm solid var(--wsl-accent); color: var(--wsl-accent); }
+.wsl-postal__section-title span { font-size: 1.35em; font-weight: 900; }
+.wsl-postal__section-title small { direction: ltr; font-size: .68em; font-weight: 800; letter-spacing: .08em; opacity: .72; }
+.wsl-label--postal .wsl-row { display: block; margin: 0 0 1.2mm; overflow-wrap: anywhere; }
+.wsl-label--postal .wsl-row strong { font-weight: 900; }
+.wsl-label--postal .wsl-field-recipient_name { font-size: 1.4em; color: #101828; }
+.wsl-label--postal .wsl-field-recipient_address { font-size: 1.18em; line-height: 1.85; }
+.wsl-label--postal .wsl-field-recipient_phone, .wsl-label--postal .wsl-field-recipient_postcode { font-size: 1.12em; }
+.wsl-postal__logo { min-height: 21mm; margin-bottom: 2.5mm; display: flex; align-items: center; justify-content: center; }
+.wsl-postal__logo img { width: min(42mm, 90%); height: 21mm; object-fit: contain; }
+.wsl-postal__barcode { margin-top: auto; padding-top: 2mm; text-align: center; }
+.wsl-postal__barcode .wsl-barcode { width: min(82mm, 82%); height: 15mm; }
+.wsl-postal__footer { min-height: 17mm; display: grid; grid-template-columns: 1.35fr 1fr 1fr; align-items: stretch; border-top: .45mm solid #263746; }
+.wsl-postal__footer .wsl-row { min-width: 0; margin: 0; padding: 2.5mm 3mm; display: flex; flex-direction: column; justify-content: center; gap: .5mm; text-align: center; }
+.wsl-postal__footer .wsl-row + .wsl-row { border-right: .3mm solid #7d8795; }
+.wsl-postal__footer .wsl-row strong { color: var(--wsl-accent); }
 @media (max-width: 850px) {
     .wsl-document { overflow: auto; padding: 8px; }
     .wsl-toolbar { align-items: stretch; flex-direction: column; }
