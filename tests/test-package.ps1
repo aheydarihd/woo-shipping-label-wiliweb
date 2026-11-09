@@ -1,5 +1,5 @@
 param(
-    [string]$Package = (Join-Path (Split-Path $PSScriptRoot -Parent) 'dist\woo-shipping-label-wiliweb-1.1.1-beta.2.zip')
+    [string]$Package = (Join-Path (Split-Path $PSScriptRoot -Parent) 'dist\woo-shipping-label-wiliweb-1.2.0.zip')
 )
 
 $ErrorActionPreference = 'Stop'

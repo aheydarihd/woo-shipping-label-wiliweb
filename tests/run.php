@@ -8,7 +8,7 @@ foreach ($argv as $arg) {
     }
 }
 $groups = [
-    'domain' => ['test-layout.php', 'test-settings.php'],
+    'domain' => ['test-layout.php', 'test-settings.php', 'test-settings-upgrade-compat.php'],
     'order-data' => ['test-order-data.php', 'test-invoice-order-data.php'],
     'invoice-data' => ['test-invoice-order-data.php'],
     'controller' => ['test-print-controller.php'],
